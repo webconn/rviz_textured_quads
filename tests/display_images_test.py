@@ -8,6 +8,7 @@ import copy
 import numpy as np
 import cv2
 from cv_bridge import CvBridge, CvBridgeError
+import rospkg
 import tf
 import math
 
@@ -17,15 +18,18 @@ from rviz_textured_quads.msg import TexturedQuad, TexturedQuadArray
 def pub_image():
 
     rospy.init_node('rviz_display_image_test', anonymous=True)
+    rospack = rospkg.RosPack()
+
     image_pub = rospy.Publisher("/semantic_targets", TexturedQuadArray, queue_size=10)
 
-    img1 = cv2.imread('./textures/bebop_drone.jpg',cv2.IMREAD_COLOR)
+    texture_path = rospack.get_path('rviz_textured_quads') + '/tests/textures/'
+    img1 = cv2.imread(texture_path + 'bebop_drone.jpg',cv2.IMREAD_COLOR)
     img_msg1 = CvBridge().cv2_to_imgmsg(img1, "bgr8")
 
-    img2 = cv2.imread('./textures/Decal.png',cv2.IMREAD_COLOR)
+    img2 = cv2.imread(texture_path + 'Decal.png',cv2.IMREAD_COLOR)
     img_msg2 = CvBridge().cv2_to_imgmsg(img2, "bgr8")
 
-    cap = cv2.VideoCapture('/home/mohitshridhar/Downloads/ICRA_2010.mov')
+    # cap = cv2.VideoCapture('/home/mohitshridhar/Downloads/ICRA_2010.mov')
 
     display_image = TexturedQuad()
     
@@ -81,7 +85,7 @@ def pub_image():
     count = 0
 
     while not rospy.is_shutdown():
-        if (cap.isOpened()):
+        if False:  # (cap.isOpened()):
             ret, frame = cap.read()
 
             display_image.image = CvBridge().cv2_to_imgmsg(frame, "bgr8")
@@ -110,7 +114,7 @@ def pub_image():
         image_pub.publish(display_images)
         rate.sleep()
 
-    cap.release()
+    # cap.release()
 
 if __name__ == '__main__':
 
