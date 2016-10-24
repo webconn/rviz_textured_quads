@@ -37,34 +37,31 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreMovableObject.h>
-#include <OGRE/OgreMaterialManager.h>
 #include <OGRE/OgreFrustum.h>
-
-#include "rviz/display_context.h"
-#include "rviz/robot/robot.h"
-#include "rviz/robot/tf_link_updater.h"
-#include "rviz/properties/color_property.h"
-#include "rviz/properties/vector_property.h"
-#include "rviz/properties/ros_topic_property.h"
-#include "rviz/properties/float_property.h"
-#include "rviz/properties/string_property.h"
-#include "rviz/properties/quaternion_property.h"
-#include "rviz/render_panel.h"
-#include "rviz/validate_floats.h"
-#include "rviz/view_manager.h"
-#include "rviz/visualization_manager.h"
-
-#include <image_transport/camera_common.h>
-
-#include <sensor_msgs/image_encodings.h>
+#include <OGRE/OgreMaterialManager.h>
+#include <OGRE/OgreMovableObject.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
 #include <cv_bridge/cv_bridge.h>
-#include <opencv2/imgproc/imgproc.hpp>
+#include <image_transport/camera_common.h>
 #include <opencv2/highgui/highgui.hpp>
-
-#include "rviz_textured_quads/mesh_display_custom.h"
+#include <opencv2/imgproc/imgproc.hpp>
+#include <rviz/display_context.h>
+#include <rviz/properties/color_property.h>
+#include <rviz/properties/float_property.h>
+#include <rviz/properties/quaternion_property.h>
+#include <rviz/properties/ros_topic_property.h>
+#include <rviz/properties/string_property.h>
+#include <rviz/properties/vector_property.h>
+#include <rviz/render_panel.h>
+#include <rviz/robot/robot.h>
+#include <rviz/robot/tf_link_updater.h>
+#include <rviz/validate_floats.h>
+#include <rviz/view_manager.h>
+#include <rviz/visualization_manager.h>
+#include <rviz_textured_quads/mesh_display_custom.h>
+#include <sensor_msgs/image_encodings.h>
+#include <vector>
 
 namespace rviz
 {
@@ -157,7 +154,7 @@ void MeshDisplayCustom::createProjector(int index)
 
   Ogre::SceneNode* filter_node;
 
-  //back filter
+  // back filter
   filter_frustums_[index].push_back(new Ogre::Frustum());
   filter_frustums_[index].back()->setProjectionType(Ogre::PT_ORTHOGRAPHIC);
   filter_node = projector_nodes_[index]->createChildSceneNode();
@@ -173,7 +170,7 @@ void MeshDisplayCustom::addDecalToMaterial(int index, const Ogre::String& matNam
 
   pass->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
   pass->setDepthBias(1);
-  //pass->setLightingEnabled(true);
+  // pass->setLightingEnabled(true);
 
   // need the decal_filter to avoid back projection
   Ogre::String resource_group_name = "decal_textures_folder";
@@ -181,19 +178,20 @@ void MeshDisplayCustom::addDecalToMaterial(int index, const Ogre::String& matNam
   if (!resource_manager.resourceGroupExists(resource_group_name))
   {
     resource_manager.createResourceGroup(resource_group_name);
-    resource_manager.addResourceLocation(ros::package::getPath("rviz_textured_quads") + "/tests/textures/", "FileSystem", resource_group_name, false);
+    resource_manager.addResourceLocation(ros::package::getPath("rviz_textured_quads") +
+        "/tests/textures/", "FileSystem", resource_group_name, false);
     resource_manager.initialiseResourceGroup(resource_group_name);
   }
   // loads files into our resource manager
   resource_manager.loadResourceGroup(resource_group_name);
 
-  Ogre::TextureUnitState* tex_state = pass->createTextureUnitState();//"Decal.png");
+  Ogre::TextureUnitState* tex_state = pass->createTextureUnitState();  // "Decal.png");
   tex_state->setTextureName(textures_[index]->getTexture()->getName());
   tex_state->setProjectiveTexturing(true, decal_frustums_[index]);
 
   tex_state->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
   tex_state->setTextureFiltering(Ogre::FO_POINT, Ogre::FO_LINEAR, Ogre::FO_NONE);
-  tex_state->setColourOperation(Ogre::LBO_REPLACE); //don't accept additional effects
+  tex_state->setColourOperation(Ogre::LBO_REPLACE);  // don't accept additional effects
 
   for (int i = 0; i < filter_frustums_[index].size(); i++)
   {
@@ -204,7 +202,8 @@ void MeshDisplayCustom::addDecalToMaterial(int index, const Ogre::String& matNam
   }
 }
 
-shape_msgs::Mesh MeshDisplayCustom::constructMesh(geometry_msgs::Pose mesh_origin, float width, float height, float border_size)
+shape_msgs::Mesh MeshDisplayCustom::constructMesh(geometry_msgs::Pose mesh_origin,
+    float width, float height, float border_size)
 {
   shape_msgs::Mesh mesh;
 
@@ -355,7 +354,9 @@ void MeshDisplayCustom::constructQuads(const rviz_textured_quads::TexturedQuadAr
     // create our scenenode and material
     load(q);
 
-    Ogre::Vector3 caption_position = Ogre::Vector3(mesh_origin.position.x, mesh_origin.position.y + 0.5f * height + text_bottom_offset_->getFloat(), mesh_origin.position.z);
+    Ogre::Vector3 caption_position = Ogre::Vector3(mesh_origin.position.x,
+        mesh_origin.position.y + 0.5f * height + text_bottom_offset_->getFloat(),
+        mesh_origin.position.z);
 
     if (!manual_objects_[q])
     {
@@ -371,7 +372,7 @@ void MeshDisplayCustom::constructQuads(const rviz_textured_quads::TexturedQuadAr
     {
       manual_objects_[q]->beginUpdate(0);
     }
-    else // Otherwise clear it and begin anew
+    else  // Otherwise clear it and begin anew
     {
       manual_objects_[q]->clear();
       manual_objects_[q]->estimateVertexCount(mesh.vertices.size() * 2);
@@ -387,8 +388,10 @@ void MeshDisplayCustom::constructQuads(const rviz_textured_quads::TexturedQuadAr
         std::vector<Ogre::Vector3> corners(3);
         for (size_t c = 0; c < 3; c++)
         {
-          size_t corner = side ? 2 - c : c; // order of corners if side == 1
-          corners[corner] = Ogre::Vector3(points[mesh.triangles[i].vertex_indices[corner]].x, points[mesh.triangles[i].vertex_indices[corner]].y, points[mesh.triangles[i].vertex_indices[corner]].z);
+          size_t corner = side ? 2 - c : c;  // order of corners if side == 1
+          corners[corner] = Ogre::Vector3(points[mesh.triangles[i].vertex_indices[corner]].x,
+              points[mesh.triangles[i].vertex_indices[corner]].y,
+              points[mesh.triangles[i].vertex_indices[corner]].z);
         }
         Ogre::Vector3 normal = (corners[1] - corners[0]).crossProduct(corners[2] - corners[0]);
         normal.normalise();
@@ -407,11 +410,13 @@ void MeshDisplayCustom::constructQuads(const rviz_textured_quads::TexturedQuadAr
 
     last_meshes_[q] = mesh;
 
-    Ogre::ColourValue text_color(text_color_property_->getColor().redF(), text_color_property_->getColor().greenF(), text_color_property_->getColor().blueF(), 1.0f);
+    Ogre::ColourValue text_color(text_color_property_->getColor().redF(),
+        text_color_property_->getColor().greenF(), text_color_property_->getColor().blueF(), 1.0f);
 
     if (!text_nodes_[q])
     {
-      text_nodes_[q] = new rviz_textured_quads::TextNode(context_->getSceneManager(), manual_objects_[q]->getParentSceneNode(), caption_position);
+      text_nodes_[q] = new rviz_textured_quads::TextNode(context_->getSceneManager(),
+          manual_objects_[q]->getParentSceneNode(), caption_position);
       text_nodes_[q]->setCaption(images->quads[q].caption);
       text_nodes_[q]->setCharacterHeight(text_height_property_->getFloat());
       text_nodes_[q]->setColor(text_color);
@@ -422,9 +427,7 @@ void MeshDisplayCustom::constructQuads(const rviz_textured_quads::TexturedQuadAr
       text_nodes_[q]->setPosition(caption_position);
       text_nodes_[q]->setCharacterHeight(text_height_property_->getFloat());
       text_nodes_[q]->setColor(text_color);
-
     }
-
   }
 }
 
@@ -442,13 +445,15 @@ void MeshDisplayCustom::updateMeshProperties()
     Ogre::Technique* technique = mesh_materials_[i]->getTechnique(0);
     Ogre::Pass* pass = technique->getPass(0);
 
-    Ogre::ColourValue self_illumination_color(0.0f, 0.0f, 0.0f, 0.0f);// border_colors_[i][3]);
+    Ogre::ColourValue self_illumination_color(0.0f, 0.0f, 0.0f, 0.0f);  // border_colors_[i][3]);
     pass->setSelfIllumination(self_illumination_color);
 
-    Ogre::ColourValue diffuse_color(0.0f, 0.0f, 0.0f, 1.0f/*border_colors_[i][0], border_colors_[i][1], border_colors_[i][2], border_colors_[i][3]*/);
+    Ogre::ColourValue diffuse_color(0.0f, 0.0f, 0.0f, 1.0f);
+        /*border_colors_[i][0], border_colors_[i][1], border_colors_[i][2], border_colors_[i][3]*/
     pass->setDiffuse(diffuse_color);
 
-    Ogre::ColourValue ambient_color(border_colors_[i][0], border_colors_[i][1], border_colors_[i][2], border_colors_[i][3]);
+    Ogre::ColourValue ambient_color(border_colors_[i][0],
+        border_colors_[i][1], border_colors_[i][2], border_colors_[i][3]);
     pass->setAmbient(ambient_color);
 
     Ogre::ColourValue specular_color(0.0f, 0.0f, 0.0f, 1.0f);
@@ -462,7 +467,6 @@ void MeshDisplayCustom::updateMeshProperties()
 
     context_->queueRender();
   }
-
 }
 
 void MeshDisplayCustom::updateDisplayImages()
@@ -482,7 +486,8 @@ void MeshDisplayCustom::subscribe()
   {
     try
     {
-      rviz_display_images_sub_ = nh_.subscribe(display_images_topic_property_->getTopicStd(), 1, &MeshDisplayCustom::updateImageMeshes, this);
+      rviz_display_images_sub_ = nh_.subscribe(display_images_topic_property_->getTopicStd(),
+          1, &MeshDisplayCustom::updateImageMeshes, this);
       setStatus(StatusProperty::Ok, "Display Images Topic", "OK");
     }
     catch (ros::Exception& e)
@@ -523,10 +528,12 @@ void MeshDisplayCustom::load(int index)
     Ogre::ColourValue self_illumnation_color(0.0f, 0.0f, 0.0f, border_colors_[index][3]);
     pass->setSelfIllumination(self_illumnation_color);
 
-    Ogre::ColourValue diffuse_color(border_colors_[index][0], border_colors_[index][1], border_colors_[index][2], border_colors_[index][3]);
+    Ogre::ColourValue diffuse_color(border_colors_[index][0],
+        border_colors_[index][1], border_colors_[index][2], border_colors_[index][3]);
     pass->setDiffuse(diffuse_color);
 
-    Ogre::ColourValue ambient_color(border_colors_[index][0], border_colors_[index][1], border_colors_[index][2], border_colors_[index][3]);
+    Ogre::ColourValue ambient_color(border_colors_[index][0],
+        border_colors_[index][1], border_colors_[index][2], border_colors_[index][3]);
     pass->setAmbient(ambient_color);
 
     Ogre::ColourValue specular_color(1.0f, 1.0f, 1.0f, 1.0f);
@@ -541,7 +548,6 @@ void MeshDisplayCustom::load(int index)
   }
 
   mesh_nodes_[index] = this->scene_node_->createChildSceneNode();
-
 }
 
 void MeshDisplayCustom::onEnable()
@@ -596,7 +602,8 @@ bool MeshDisplayCustom::updateCamera(int index, bool update_image)
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
 
-  context_->getFrameManager()->getTransform(last_images_[index]->header.frame_id, last_images_[index]->header.stamp, position, orientation);
+  context_->getFrameManager()->getTransform(last_images_[index]->header.frame_id,
+      last_images_[index]->header.stamp, position, orientation);
 
   Eigen::Affine3d trans_mat;
   tf::poseMsgToEigen(mesh_poses_[index], trans_mat);
@@ -605,13 +612,17 @@ bool MeshDisplayCustom::updateCamera(int index, bool update_image)
   trans_mat = trans_mat * Eigen::Quaterniond(0.70710678, -0.70710678f, 0.0f, 0.0f);
 
   float z_offset = (img_width > img_height) ? img_width : img_height;
-  float scale_factor = 1.0f / (physical_widths_[index] > physical_heights_[index] ? physical_widths_[index] : physical_heights_[index]);
+  float scale_factor = 1.0f /
+      (physical_widths_[index] > physical_heights_[index] ?
+       physical_widths_[index] : physical_heights_[index]);
 
   Eigen::Vector4d projector_origin(0.0f, 0.0f, 1.0f / (z_offset * scale_factor), 1.0f);
   Eigen::Vector4d projector_point = trans_mat.matrix() * projector_origin;
 
   position = Ogre::Vector3(projector_point[0], projector_point[1], projector_point[2]);
-  orientation = Ogre::Quaternion(mesh_poses_[index].orientation.w, mesh_poses_[index].orientation.x, mesh_poses_[index].orientation.y, mesh_poses_[index].orientation.z);
+  orientation = Ogre::Quaternion(mesh_poses_[index].orientation.w,
+      mesh_poses_[index].orientation.x, mesh_poses_[index].orientation.y,
+      mesh_poses_[index].orientation.z);
 
   // Update orientation with 90 deg offset (xy to xz)
   orientation = orientation * Ogre::Quaternion(Ogre::Degree(-90), Ogre::Vector3::UNIT_X);
@@ -622,7 +633,9 @@ bool MeshDisplayCustom::updateCamera(int index, bool update_image)
 
   // std::cout << "CameraInfo dimensions: " << last_info_->width << " x " << last_info_->height << std::endl;
   // std::cout << "Texture dimensions: " << last_image_->width << " x " << last_image_->height << std::endl;
-  //std::cout << "Original image dimensions: " << last_image_->width*full_image_binning_ << " x " << last_image_->height*full_image_binning_ << std::endl;
+  // std::cout << "Original image dimensions: "
+  //    << last_image_->width*full_image_binning_ << " x "
+  //    << last_image_->height*full_image_binning_ << std::endl;
 
   // If the image width/height is 0 due to a malformed caminfo, try to grab the width from the image.
   if (img_width <= 0)
@@ -642,16 +655,19 @@ bool MeshDisplayCustom::updateCamera(int index, bool update_image)
   // if even the texture has 0 size, return
   if (img_height <= 0.0 || img_width <= 0.0)
   {
-    setStatus(StatusProperty::Error, "Camera Info",
-              "Could not determine width/height of image due to malformed CameraInfo (either width or height is 0) and texture.");
+    const std::string text = "Could not determine width/height of image due to malformed \
+        CameraInfo (either width or height is 0) and texture.";
+    setStatus(StatusProperty::Error, "Camera Info", QString::fromStdString(text));
     return false;
   }
 
   // projection matrix
-  float P[12] = {1.0, 0.0, img_width / 2.0f, 0.0,
-                 0.0, 1.0, img_height / 2.0f, 0.0,
-                 0.0, 0.0, 1.0, 0.0
-                };
+  float P[12] =
+  {
+      1.0, 0.0, img_width / 2.0f, 0.0,
+      0.0, 1.0, img_height / 2.0f, 0.0,
+      0.0, 0.0, 1.0, 0.0
+  };
 
   // calculate projection matrix
   double fx = P[0];
@@ -669,7 +685,8 @@ bool MeshDisplayCustom::updateCamera(int index, bool update_image)
   if (!validateFloats(position))
   {
     ROS_ERROR("position error");
-    setStatus(StatusProperty::Error, "Camera Info", "CameraInfo/P resulted in an invalid position calculation (nans or infs)");
+    setStatus(StatusProperty::Error, "Camera Info",
+        "CameraInfo/P resulted in an invalid position calculation (nans or infs)");
     return false;
   }
 
@@ -740,7 +757,7 @@ void MeshDisplayCustom::reset()
 
 void MeshDisplayCustom::processImage(int index, const sensor_msgs::Image& msg)
 {
-  //std::cout<<"camera image received"<<std::endl;
+  // std::cout<<"camera image received"<<std::endl;
   cv_bridge::CvImagePtr cv_ptr;
 
   // simply converting every image to RGBA
@@ -776,7 +793,7 @@ void MeshDisplayCustom::processImage(int index, const sensor_msgs::Image& msg)
   textures_[index]->addMessage(cv_ptr->toImageMsg());
 }
 
-} // namespace rviz
+}  // namespace rviz
 
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_EXPORT_CLASS(rviz::MeshDisplayCustom, rviz::Display)

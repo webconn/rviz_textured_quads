@@ -100,10 +100,6 @@ target_link_libraries(${TEXTURED_QUAD_LIB} ${catkin_LIBRARIES} ${QT_LIBRARIES} $
 
 add_dependencies(${TEXTURED_QUAD_LIB} ${catkin_EXPORTED_TARGETS})
 
-# add_library(${TEXTURED_QUAD_LIB} src/plugin_init.cpp)
-# target_link_libraries(${TEXTURED_QUAD_LIB} ${TEXTURED_QUAD_LIB}_core ${catkin_LIBRARIES})
-# add_dependencies(${TEXTURED_QUAD_LIB} ${catkin_EXPORTED_TARGETS})
-
 install(TARGETS ${TEXTURED_QUAD_LIB}  # ${TEXTURED_QUAD_LIB}_core
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})

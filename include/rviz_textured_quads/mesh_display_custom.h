@@ -102,10 +102,6 @@ class ColorProperty;
 class VectorProperty;
 class StringProperty;
 class QuaternionProperty;
-}
-
-namespace rviz
-{
 
 /**
  * \class MeshDisplayCustom
@@ -180,18 +176,19 @@ private:
   ros::Subscriber rviz_display_images_sub_;
 
   std::vector<Ogre::Frustum*> decal_frustums_;
-  std::vector<std::vector<Ogre::Frustum*> > filter_frustums_; //need multiple filters (back, up, down, left, right)
+  // need multiple filters (back, up, down, left, right)
+  std::vector<std::vector<Ogre::Frustum*> > filter_frustums_;
   std::vector<Ogre::SceneNode*> projector_nodes_;
 
   std::vector<RenderPanel*> render_panel_list_;
-  RenderPanel* render_panel_; // this is the active render panel
+  RenderPanel* render_panel_;  // this is the active render panel
 
   bool initialized_;
 
   boost::mutex mesh_mutex_;
 };
 
-} // namespace rviz
+}  // namespace rviz
 
 #endif
 

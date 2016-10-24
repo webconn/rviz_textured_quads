@@ -33,13 +33,15 @@
 
 #include <rviz/ogre_helpers/shape.h>
 #include <rviz/ogre_helpers/movable_text.h>
+#include <string>
 
 namespace rviz_textured_quads
 {
 class TextNode
 {
 public:
-  TextNode(Ogre::SceneManager* sceneManager, Ogre::SceneNode* parentNode, Ogre::Vector3 position = Ogre::Vector3::ZERO) : m_sceneManager(sceneManager)
+  TextNode(Ogre::SceneManager* sceneManager, Ogre::SceneNode* parentNode,
+      Ogre::Vector3 position = Ogre::Vector3::ZERO) : m_sceneManager(sceneManager)
   {
     m_sceneNode = parentNode->createChildSceneNode();
 
@@ -106,6 +108,7 @@ private:
   rviz::MovableText* m_text;
 };
 
-}
+}  // namespace rviz_textured_quads
 
-#endif // TEXT_NODE_H
+#endif  // TEXT_NODE_H
+
