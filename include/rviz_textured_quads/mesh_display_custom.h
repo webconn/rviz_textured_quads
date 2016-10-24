@@ -37,6 +37,10 @@
 #ifndef RVIZ_MESH_DISPLAY_H
 #define RVIZ_MESH_DISPLAY_H
 
+#include <QObject>
+// kinetic compatibility http://answers.ros.org/question/233786/parse-error-at-boost_join/
+#ifndef Q_MOC_RUN
+
 #include "rviz/display.h"
 #include "rviz/frame_manager.h"
 #include "rviz/image/image_display_base.h"
@@ -79,6 +83,7 @@
 #include <vector>
 
 #include "text_node.h"
+#endif  // Q_MOC_RUN
 
 namespace Ogre
 {

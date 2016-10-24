@@ -64,7 +64,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#include "mesh_display_custom.h"
+#include "rviz_textured_quads/mesh_display_custom.h"
 
 namespace rviz
 {
@@ -776,3 +776,6 @@ void MeshDisplayCustom::processImage(int index, const sensor_msgs::Image& msg)
 }
 
 } // namespace rviz
+
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_EXPORT_CLASS(rviz::MeshDisplayCustom, rviz::Display)
