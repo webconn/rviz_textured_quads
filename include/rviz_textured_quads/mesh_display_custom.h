@@ -3,7 +3,7 @@
  *
  * Author: Felipe Bacim.
  *
- * help with selection of robot parts 
+ * help with selection of robot parts
  */
 /*
  * Copyright (c) 2008, Willow Garage, Inc.
@@ -113,14 +113,14 @@ namespace rviz
  */
 class MeshDisplayCustom: public rviz::Display,  public Ogre::RenderTargetListener, public Ogre::RenderQueueListener
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   MeshDisplayCustom();
   virtual ~MeshDisplayCustom();
 
   // Overrides from Display
   virtual void onInitialize();
-  virtual void update( float wall_dt, float ros_dt );
+  virtual void update(float wall_dt, float ros_dt);
   virtual void reset();
 
 private Q_SLOTS:
@@ -146,10 +146,10 @@ private:
 
   void createProjector(int index);
   void addDecalToMaterial(int index, const Ogre::String& matName);
-  void updateImageMeshes( const rviz_textured_quads::TexturedQuadArray::ConstPtr& images );
-  
-  void constructQuads( const rviz_textured_quads::TexturedQuadArray::ConstPtr& images );
-  shape_msgs::Mesh constructMesh( geometry_msgs::Pose mesh_origin, float width, float height, float border_size );
+  void updateImageMeshes(const rviz_textured_quads::TexturedQuadArray::ConstPtr& images);
+
+  void constructQuads(const rviz_textured_quads::TexturedQuadArray::ConstPtr& images);
+  shape_msgs::Mesh constructMesh(geometry_msgs::Pose mesh_origin, float width, float height, float border_size);
   void clearStates(int num_quads);
 
   float time_since_last_transform_;

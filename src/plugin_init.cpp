@@ -32,8 +32,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 //@TODO_ADD_AUTHOR_INFO
-#include <class_loader/class_loader.h> 
+#include <class_loader/class_loader.h>
 #include "mesh_display_custom.h"
 
-CLASS_LOADER_REGISTER_CLASS( rviz::MeshDisplayCustom, rviz::Display )
+CLASS_LOADER_REGISTER_CLASS(rviz::MeshDisplayCustom, rviz::Display)
 

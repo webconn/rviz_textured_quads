@@ -3,10 +3,13 @@ project(rviz_textured_quads)
 
 ## Find catkin and any catkin packages on which
 ## this package depends at build time
-find_package(catkin REQUIRED COMPONENTS roscpp rospy roslib std_msgs sensor_msgs shape_msgs rviz pluginlib class_loader cv_bridge message_generation geometry_msgs sensor_msgs cmake_modules eigen_conversions rviz)
+find_package(catkin REQUIRED COMPONENTS roscpp rospy roslib std_msgs sensor_msgs shape_msgs rviz pluginlib class_loader cv_bridge message_generation geometry_msgs sensor_msgs cmake_modules eigen_conversions roslint rviz)
 
 find_package(Eigen REQUIRED)
 find_package(OpenGL REQUIRED)
+
+roslint_cpp()
+roslint_python()
 
 ## This plugin includes Qt widgets, so we must include Qt.
 ## We'll use the version that rviz used so they are compatible.
@@ -51,14 +54,14 @@ catkin_package(
 #   	src
 #     ${OPENGL_INCLUDE_DIR}
 #   CATKIN_DEPENDS
-#     roscpp 
+#     roscpp
 #     rospy
 #     roslib
-#     std_msgs 
+#     std_msgs
 #     sensor_msgs
 #     shape_msgs
-#     rviz 
-#     pluginlib 
+#     rviz
+#     pluginlib
 #     class_loader
 #     cv_bridge
 #   	geometry_msgs
@@ -75,7 +78,6 @@ include_directories(
 # include_directories(SYSTEM
 #                     ${OPENGL_INCLUDE_DIR}
 #                     ${QT_INCLUDE_DIR})
-                    
 # link_directories(${catkin_LIBRARY_DIRS})
 
 
