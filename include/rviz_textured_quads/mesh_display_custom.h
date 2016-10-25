@@ -130,7 +130,7 @@ protected:
 
 private:
   void clear();
-  bool updateCamera(int index, bool update_image);
+  bool updateCamera(bool update_image);
 
   void createProjector(int index);
   void addDecalToMaterial(int index, const Ogre::String& matName);
@@ -161,7 +161,7 @@ private:
   Ogre::SceneNode* mesh_nodes_;
   std::vector<Ogre::ManualObject*> manual_objects_;
   std::vector<Ogre::MaterialPtr> mesh_materials_;
-  std::vector<ROSImageTexture*> textures_;
+  ROSImageTexture* textures_;
 
   std::vector<Ogre::Frustum*> decal_frustums_;
   // need multiple filters (back, up, down, left, right)

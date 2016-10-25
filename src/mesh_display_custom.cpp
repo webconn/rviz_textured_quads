@@ -76,6 +76,7 @@ MeshDisplayCustom::MeshDisplayCustom()
   : Display()
   , time_since_last_transform_(0.0f)
   , mesh_nodes_(NULL)
+  , textures_(NULL)
 {
   image_topic_property_ = new RosTopicProperty("Image Topic", "",
       QString::fromStdString(ros::message_traits::datatype<sensor_msgs::Image>()),
@@ -108,12 +109,7 @@ MeshDisplayCustom::~MeshDisplayCustom()
   decal_frustums_.clear();
 
   // clear textures
-  for (std::vector<ROSImageTexture*>::iterator it = textures_.begin() ; it != textures_.end(); ++it)
-  {
-    delete(*it);
-  }
-  textures_.clear();
-
+  delete textures_;
   delete mesh_nodes_;
 
   // TODO: clean up other things
@@ -166,7 +162,7 @@ void MeshDisplayCustom::addDecalToMaterial(int index, const Ogre::String& matNam
   resource_manager.loadResourceGroup(resource_group_name);
 
   Ogre::TextureUnitState* tex_state = pass->createTextureUnitState();  // "Decal.png");
-  tex_state->setTextureName(textures_[index]->getTexture()->getName());
+  tex_state->setTextureName(textures_->getTexture()->getName());
   tex_state->setProjectiveTexturing(true, decal_frustums_[index]);
 
   tex_state->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
@@ -245,7 +241,6 @@ void MeshDisplayCustom::clearStates()
   last_meshes_.resize(num_quads);
 
   last_images_.resize(num_quads);
-  textures_.resize(num_quads);
   decal_frustums_.resize(num_quads);
   projector_nodes_.resize(num_quads);
   filter_frustums_.resize(num_quads);
@@ -506,14 +501,11 @@ void MeshDisplayCustom::update(float wall_dt, float ros_dt)
 {
   time_since_last_transform_ += wall_dt;
 
-  if (!image_topic_property_->getTopic().isEmpty())
+  if (textures_ && !image_topic_property_->getTopic().isEmpty())
   {
     try
     {
-      for (int i = 0; i < textures_.size(); i++)
-      {
-        updateCamera(i, textures_[i]->update());
-      }
+      updateCamera(textures_->update());
     }
     catch (UnsupportedImageEncoding& e)
     {
@@ -522,11 +514,12 @@ void MeshDisplayCustom::update(float wall_dt, float ros_dt)
   }
 }
 
-bool MeshDisplayCustom::updateCamera(int index, bool update_image)
+bool MeshDisplayCustom::updateCamera(bool update_image)
 {
+  int index = 0;
   if (update_image)
   {
-    last_images_[index] = textures_[index]->getImage();
+    last_images_[index] = textures_->getImage();
   }
 
   if (!img_heights_ || !img_widths_ ||
@@ -584,14 +577,14 @@ bool MeshDisplayCustom::updateCamera(int index, bool update_image)
   {
     ROS_ERROR("Malformed CameraInfo on camera [%s], width = 0", qPrintable(getName()));
     // use texture size, but have to remove border from the perspective calculations
-    img_width = textures_[index]->getWidth() - 2;
+    img_width = textures_->getWidth() - 2;
   }
 
   if (img_height <= 0)
   {
     ROS_ERROR("Malformed CameraInfo on camera [%s], height = 0", qPrintable(getName()));
     // use texture size, but have to remove border from the perspective calculations
-    img_height = textures_[index]->getHeight() - 2;
+    img_height = textures_->getHeight() - 2;
   }
 
   // if even the texture has 0 size, return
@@ -681,10 +674,7 @@ bool MeshDisplayCustom::updateCamera(int index, bool update_image)
 
 void MeshDisplayCustom::clear()
 {
-  for (int i = 0; i < textures_.size(); i++)
-  {
-    textures_[i]->clear();
-  }
+  textures_->clear();
 
   context_->queueRender();
 
@@ -729,10 +719,10 @@ void MeshDisplayCustom::processImage(int index, const sensor_msgs::Image& msg)
   cv::flip(cv_ptr->image, cv_ptr->image, -1);
 
   // Output modified video stream
-  if (textures_[index] == NULL)
-    textures_[index] = new ROSImageTexture();
+  if (textures_ == NULL)
+    textures_ = new ROSImageTexture();
 
-  textures_[index]->addMessage(cv_ptr->toImageMsg());
+  textures_->addMessage(cv_ptr->toImageMsg());
 }
 
 }  // namespace rviz
