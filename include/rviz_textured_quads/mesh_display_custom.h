@@ -159,7 +159,7 @@ private:
   std::vector<sensor_msgs::Image::ConstPtr> last_images_;
 
   Ogre::SceneNode* mesh_nodes_;
-  std::vector<Ogre::ManualObject*> manual_objects_;
+  Ogre::ManualObject* manual_objects_;
   std::vector<Ogre::MaterialPtr> mesh_materials_;
   ROSImageTexture* textures_;
 

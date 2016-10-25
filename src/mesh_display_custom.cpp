@@ -78,6 +78,7 @@ MeshDisplayCustom::MeshDisplayCustom()
   , mesh_nodes_(NULL)
   , textures_(NULL)
   , projector_nodes_(NULL)
+  , manual_objects_(NULL)
 {
   image_topic_property_ = new RosTopicProperty("Image Topic", "",
       QString::fromStdString(ros::message_traits::datatype<sensor_msgs::Image>()),
@@ -96,11 +97,7 @@ MeshDisplayCustom::~MeshDisplayCustom()
   // TODO: Why am I doing this? switch to shared ptrs Argh!!!!!!
 
   // clear manual objects
-  for (std::vector<Ogre::ManualObject*>::iterator it = manual_objects_.begin() ; it != manual_objects_.end(); ++it)
-  {
-    delete(*it);
-  }
-  manual_objects_.clear();
+  delete manual_objects_;
 
   // clear decal frustrums
   for (std::vector<Ogre::Frustum*>::iterator it = decal_frustums_.begin() ; it != decal_frustums_.end(); ++it)
@@ -229,16 +226,13 @@ shape_msgs::Mesh MeshDisplayCustom::constructMesh(geometry_msgs::Pose mesh_origi
 
 void MeshDisplayCustom::clearStates()
 {
-  for (int q = 0; q < manual_objects_.size(); q++)
-  {
-    manual_objects_[q]->clear();
-  }
+  if (manual_objects_)
+    manual_objects_->clear();
 
   const int num_quads = 1;
   // resize state vectors
   mesh_poses_.resize(num_quads);
 
-  manual_objects_.resize(num_quads);
   last_meshes_.resize(num_quads);
 
   last_images_.resize(num_quads);
@@ -315,25 +309,25 @@ void MeshDisplayCustom::constructQuads(const sensor_msgs::Image::ConstPtr& image
     // create our scenenode and material
     load();
 
-    if (!manual_objects_[q])
+    if (!manual_objects_)
     {
       static uint32_t count = 0;
       std::stringstream ss;
       ss << "MeshObject" << count++ << "Index" << q;
-      manual_objects_[q] = context_->getSceneManager()->createManualObject(ss.str());
-      mesh_nodes_->attachObject(manual_objects_[q]);
+      manual_objects_ = context_->getSceneManager()->createManualObject(ss.str());
+      mesh_nodes_->attachObject(manual_objects_);
     }
 
     // If we have the same number of tris as previously, just update the object
     if (last_meshes_[q].vertices.size() > 0 && mesh.vertices.size() * 2 == last_meshes_[q].vertices.size())
     {
-      manual_objects_[q]->beginUpdate(0);
+      manual_objects_->beginUpdate(0);
     }
     else  // Otherwise clear it and begin anew
     {
-      manual_objects_[q]->clear();
-      manual_objects_[q]->estimateVertexCount(mesh.vertices.size() * 2);
-      manual_objects_[q]->begin(mesh_materials_[q]->getName(), Ogre::RenderOperation::OT_TRIANGLE_LIST);
+      manual_objects_->clear();
+      manual_objects_->estimateVertexCount(mesh.vertices.size() * 2);
+      manual_objects_->begin(mesh_materials_[q]->getName(), Ogre::RenderOperation::OT_TRIANGLE_LIST);
     }
 
     const std::vector<geometry_msgs::Point>& points = mesh.vertices;
@@ -355,13 +349,13 @@ void MeshDisplayCustom::constructQuads(const sensor_msgs::Image::ConstPtr& image
 
         for (size_t c = 0; c < 3; c++)
         {
-          manual_objects_[q]->position(corners[c]);
-          manual_objects_[q]->normal(normal);
+          manual_objects_->position(corners[c]);
+          manual_objects_->normal(normal);
         }
       }
     }
 
-    manual_objects_[q]->end();
+    manual_objects_->end();
 
     mesh_materials_[q]->setCullingMode(Ogre::CULL_NONE);
 
