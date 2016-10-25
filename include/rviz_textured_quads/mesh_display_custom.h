@@ -82,7 +82,6 @@
 #include <map>
 #include <vector>
 
-#include "text_node.h"
 #endif  // Q_MOC_RUN
 
 namespace Ogre
@@ -161,7 +160,6 @@ private:
   std::vector<float> physical_widths_, physical_heights_;
   std::vector<std::vector<float> > border_colors_;
   std::vector<float> border_sizes_;
-  std::vector<rviz_textured_quads::TextNode*> text_nodes_;
 
   ros::NodeHandle nh_;
 

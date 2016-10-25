@@ -95,7 +95,7 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 
 set(TEXTURED_QUAD_LIB rviz_textured_quads)
 
-add_library(${TEXTURED_QUAD_LIB} src/text_node.h src/mesh_display_custom.cpp ${MOC_FILES})
+add_library(${TEXTURED_QUAD_LIB} src/mesh_display_custom.cpp ${MOC_FILES})
 target_link_libraries(${TEXTURED_QUAD_LIB} ${catkin_LIBRARIES} ${QT_LIBRARIES} ${Eigen_LIBRARIES})
 
 add_dependencies(${TEXTURED_QUAD_LIB} ${catkin_EXPORTED_TARGETS})

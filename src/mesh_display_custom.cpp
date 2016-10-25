@@ -85,15 +85,6 @@ MeshDisplayCustom::MeshDisplayCustom()
       QString::fromStdString(ros::message_traits::datatype<rviz_textured_quads::TexturedQuadArray>()),
       "shape_msgs::Mesh topic to subscribe to.",
       this, SLOT(updateDisplayImages()));
-
-  text_color_property_ = new ColorProperty("Text Color", QColor(255, 255, 255),
-      "caption color.", this, SLOT(updateMeshProperties()));
-
-  text_height_property_ = new FloatProperty("Text Height", 0.1f,
-      "font size of caption", this, SLOT(updateMeshProperties()));
-
-  text_bottom_offset_ =  new FloatProperty("Text Bottom Offset", 0.18f,
-      "text placement offset below", this, SLOT(updateMeshProperties()));
 }
 
 MeshDisplayCustom::~MeshDisplayCustom()
@@ -129,13 +120,6 @@ MeshDisplayCustom::~MeshDisplayCustom()
     delete(*it);
   }
   mesh_nodes_.clear();
-
-  // clear text nodes
-  for (std::vector<rviz_textured_quads::TextNode*>::iterator it = text_nodes_.begin() ; it != text_nodes_.end(); ++it)
-  {
-    delete(*it);
-  }
-  text_nodes_.clear();
 
   // TODO: clean up other things
 }
@@ -257,11 +241,6 @@ void MeshDisplayCustom::clearStates(int num_quads)
     manual_objects_[q]->clear();
   }
 
-  for (int q = 0; q < text_nodes_.size(); q++)
-  {
-    text_nodes_[q]->clear();
-  }
-
   // resize state vectors
   mesh_poses_.resize(num_quads);
   img_widths_.resize(num_quads);
@@ -279,7 +258,6 @@ void MeshDisplayCustom::clearStates(int num_quads)
   filter_frustums_.resize(num_quads);
   mesh_materials_.resize(num_quads);
   mesh_nodes_.resize(num_quads);
-  text_nodes_.resize(num_quads);
 
   border_colors_.resize(num_quads);
   border_sizes_.resize(num_quads);
@@ -354,10 +332,6 @@ void MeshDisplayCustom::constructQuads(const rviz_textured_quads::TexturedQuadAr
     // create our scenenode and material
     load(q);
 
-    Ogre::Vector3 caption_position = Ogre::Vector3(mesh_origin.position.x,
-        mesh_origin.position.y + 0.5f * height + text_bottom_offset_->getFloat(),
-        mesh_origin.position.z);
-
     if (!manual_objects_[q])
     {
       static uint32_t count = 0;
@@ -412,22 +386,6 @@ void MeshDisplayCustom::constructQuads(const rviz_textured_quads::TexturedQuadAr
 
     Ogre::ColourValue text_color(text_color_property_->getColor().redF(),
         text_color_property_->getColor().greenF(), text_color_property_->getColor().blueF(), 1.0f);
-
-    if (!text_nodes_[q])
-    {
-      text_nodes_[q] = new rviz_textured_quads::TextNode(context_->getSceneManager(),
-          manual_objects_[q]->getParentSceneNode(), caption_position);
-      text_nodes_[q]->setCaption(images->quads[q].caption);
-      text_nodes_[q]->setCharacterHeight(text_height_property_->getFloat());
-      text_nodes_[q]->setColor(text_color);
-    }
-    else
-    {
-      text_nodes_[q]->setCaption(images->quads[q].caption);
-      text_nodes_[q]->setPosition(caption_position);
-      text_nodes_[q]->setCharacterHeight(text_height_property_->getFloat());
-      text_nodes_[q]->setColor(text_color);
-    }
   }
 }
 

@@ -57,7 +57,6 @@ def pub_image():
     display_image.height = (scale * img_msg1.height)/img_msg1.width
     display_image.border_color = [1., 0., 0., 0.5]
     display_image.border_size = 0.05
-    display_image.caption = 'ICRA Video'
 
 
     second_image = copy.deepcopy(display_image)
@@ -74,7 +73,6 @@ def pub_image():
     second_image.pose.orientation.w = 0.70710678
     second_image.border_color = [0.5, 1.0, 0.0, 0.5]
     second_image.border_size = 0.1
-    second_image.caption = 'Decal'
 
     display_images = TexturedQuadArray()
     display_images = np.array([display_image, second_image])
