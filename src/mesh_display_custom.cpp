@@ -245,8 +245,6 @@ void MeshDisplayCustom::clearStates()
   const int num_quads = 1;
   // resize state vectors
   mesh_poses_.resize(num_quads);
-  img_widths_.resize(num_quads);
-  img_heights_.resize(num_quads);
   physical_widths_.resize(num_quads);
   physical_heights_.resize(num_quads);
 
@@ -315,8 +313,8 @@ void MeshDisplayCustom::constructQuads(const sensor_msgs::Image::ConstPtr& image
 
     // set properties
     mesh_poses_[q] = mesh_origin;
-    img_widths_[q] = image->width;
-    img_heights_[q] = image->height;
+    img_widths_ = image->width;
+    img_heights_ = image->height;
 
     // default border size (no border)
     border_sizes_[q] = 0.0f;
@@ -540,7 +538,7 @@ bool MeshDisplayCustom::updateCamera(int index, bool update_image)
     last_images_[index] = textures_[index]->getImage();
   }
 
-  if (!img_heights_[index] || !img_widths_[index] ||
+  if (!img_heights_ || !img_widths_ ||
       !physical_widths_[index] || !physical_heights_[index] ||
       !last_images_[index])
   {
@@ -549,8 +547,8 @@ bool MeshDisplayCustom::updateCamera(int index, bool update_image)
 
   boost::mutex::scoped_lock lock(mesh_mutex_);
 
-  float img_width  = img_widths_[index];
-  float img_height = img_heights_[index];
+  float img_width  = img_widths_;
+  float img_height = img_heights_;
 
   Ogre::Vector3 position;
   Ogre::Quaternion orientation;
