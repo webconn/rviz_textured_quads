@@ -126,6 +126,7 @@ MeshDisplayCustom::~MeshDisplayCustom()
 
 void MeshDisplayCustom::onInitialize()
 {
+	tf_frame_property_->setFrameManager(context_->getFrameManager());
   Display::onInitialize();
 }
 
@@ -277,9 +278,27 @@ void MeshDisplayCustom::constructQuads(const sensor_msgs::Image::ConstPtr& image
   {
     processImage(q, *image);
 
-    // TODO(lucasw) get pose from tf
     geometry_msgs::Pose mesh_origin;
-    mesh_origin.orientation.w = 1.0;
+
+    // TODO(lucasw) get pose from tf
+    const std::string frame = tf_frame_property_->getFrameStd();
+		// Lookup transform into fixed frame
+		Ogre::Vector3 position;
+		Ogre::Quaternion orientation;
+		if (!context_->getFrameManager()->getTransform(frame, ros::Time::now(), position, orientation))
+		{
+			ROS_DEBUG("Error transforming from fixed frame to frame '%s'",
+					frame.c_str());
+			return;
+		}
+
+    mesh_origin.position.x = position[0];
+    mesh_origin.position.y = position[1];
+    mesh_origin.position.z = position[2];
+    mesh_origin.orientation.w = orientation[0];
+    mesh_origin.orientation.x = orientation[1];
+    mesh_origin.orientation.y = orientation[2];
+    mesh_origin.orientation.z = orientation[3];
 
     // Rotate from x-y to x-z plane:
     Eigen::Affine3d trans_mat;
