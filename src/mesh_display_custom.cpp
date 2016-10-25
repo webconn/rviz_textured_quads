@@ -245,8 +245,6 @@ void MeshDisplayCustom::clearStates()
   const int num_quads = 1;
   // resize state vectors
   mesh_poses_.resize(num_quads);
-  physical_widths_.resize(num_quads);
-  physical_heights_.resize(num_quads);
 
   manual_objects_.resize(num_quads);
   last_meshes_.resize(num_quads);
@@ -321,8 +319,8 @@ void MeshDisplayCustom::constructQuads(const sensor_msgs::Image::ConstPtr& image
 
     shape_msgs::Mesh mesh = constructMesh(mesh_origin, width, height, border_sizes_[q]);
 
-    physical_widths_[q] = width;
-    physical_heights_[q] = height;
+    physical_widths_ = width;
+    physical_heights_ = height;
 
     boost::mutex::scoped_lock lock(mesh_mutex_);
 
@@ -539,7 +537,7 @@ bool MeshDisplayCustom::updateCamera(int index, bool update_image)
   }
 
   if (!img_heights_ || !img_widths_ ||
-      !physical_widths_[index] || !physical_heights_[index] ||
+      !physical_widths_ || !physical_heights_ ||
       !last_images_[index])
   {
     return false;
@@ -564,8 +562,8 @@ bool MeshDisplayCustom::updateCamera(int index, bool update_image)
 
   float z_offset = (img_width > img_height) ? img_width : img_height;
   float scale_factor = 1.0f /
-      (physical_widths_[index] > physical_heights_[index] ?
-       physical_widths_[index] : physical_heights_[index]);
+      ((physical_widths_ > physical_heights_) ?
+       physical_widths_ : physical_heights_);
 
   Eigen::Vector4d projector_origin(0.0f, 0.0f, 1.0f / (z_offset * scale_factor), 1.0f);
   Eigen::Vector4d projector_point = trans_mat.matrix() * projector_origin;

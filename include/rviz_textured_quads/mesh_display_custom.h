@@ -150,7 +150,7 @@ private:
   std::vector<shape_msgs::Mesh> last_meshes_;
   std::vector<geometry_msgs::Pose> mesh_poses_;
   int img_widths_, img_heights_;
-  std::vector<float> physical_widths_, physical_heights_;
+  float physical_widths_, physical_heights_;
   std::vector<std::vector<float> > border_colors_;
   std::vector<float> border_sizes_;
 
