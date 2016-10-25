@@ -47,12 +47,8 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <rviz/display_context.h>
-#include <rviz/properties/color_property.h>
-#include <rviz/properties/float_property.h>
-#include <rviz/properties/quaternion_property.h>
 #include <rviz/properties/ros_topic_property.h>
-#include <rviz/properties/string_property.h>
-#include <rviz/properties/vector_property.h>
+#include <rviz/properties/tf_frame_property.h>
 #include <rviz/render_panel.h>
 #include <rviz/robot/robot.h>
 #include <rviz/robot/tf_link_updater.h>
@@ -81,10 +77,14 @@ MeshDisplayCustom::MeshDisplayCustom()
   , time_since_last_transform_(0.0f)
   , initialized_(false)
 {
-  display_images_topic_property_ = new RosTopicProperty("Display Images Topic", "",
-      QString::fromStdString(ros::message_traits::datatype<rviz_textured_quads::TexturedQuadArray>()),
-      "shape_msgs::Mesh topic to subscribe to.",
+  image_topic_property_ = new RosTopicProperty("Image Topic", "",
+      QString::fromStdString(ros::message_traits::datatype<sensor_msgs::Image>()),
+      "Image topic to subscribe to.",
       this, SLOT(updateDisplayImages()));
+  // TODO(lucasw) add controls to switch which plane to align to?
+  tf_frame_property_ = new TfFrameProperty("Quad Frame", "map",
+      "Align the image quad to the xy plane of this tf frame",
+      this, 0, true);
 }
 
 MeshDisplayCustom::~MeshDisplayCustom()
@@ -260,20 +260,26 @@ void MeshDisplayCustom::clearStates(int num_quads)
   mesh_nodes_.resize(num_quads);
 
   border_colors_.resize(num_quads);
+  for (size_t i = 0; i < 4; ++i)
+  {
+    border_colors_[0].push_back(1.0);
+  }
   border_sizes_.resize(num_quads);
 }
 
-void MeshDisplayCustom::constructQuads(const rviz_textured_quads::TexturedQuadArray::ConstPtr& images)
+void MeshDisplayCustom::constructQuads(const sensor_msgs::Image::ConstPtr& image)
 {
-  int num_quads = images->quads.size();
+  int num_quads = 1;
 
   clearStates(num_quads);
 
   for (int q = 0; q < num_quads; q++)
   {
-    processImage(q, images->quads[q].image);
+    processImage(q, *image);
 
-    geometry_msgs::Pose mesh_origin = images->quads[q].pose;
+    // TODO(lucasw) get pose from tf
+    geometry_msgs::Pose mesh_origin;
+    mesh_origin.orientation.w = 1.0;
 
     // Rotate from x-y to x-z plane:
     Eigen::Affine3d trans_mat;
@@ -286,41 +292,16 @@ void MeshDisplayCustom::constructQuads(const rviz_textured_quads::TexturedQuadAr
     mesh_origin.orientation.z = xz_quat.z();
     mesh_origin.orientation.w = xz_quat.w();
 
-    float width = images->quads[q].width;
-    float height = images->quads[q].height;
+    float width = 1.0 * image->width/image->height;
+    float height = 1.0;
 
     // set properties
     mesh_poses_[q] = mesh_origin;
-    img_widths_[q] = images->quads[q].image.width;
-    img_heights_[q] = images->quads[q].image.height;
+    img_widths_[q] = image->width;
+    img_heights_[q] = image->height;
 
-    border_colors_[q].resize(4);
-
-    if (images->quads[q].border_color.size() == 4)
-    {
-      border_colors_[q][0] = images->quads[q].border_color[0];
-      border_colors_[q][1] = images->quads[q].border_color[1];
-      border_colors_[q][2] = images->quads[q].border_color[2];
-      border_colors_[q][3] = images->quads[q].border_color[3];
-    }
-    else
-    {
-      // default white border
-      border_colors_[q][0] = 255.0f;
-      border_colors_[q][1] = 255.0f;
-      border_colors_[q][2] = 255.0f;
-      border_colors_[q][3] = 255.0f;
-    }
-
-    if (images->quads[q].border_size >= 0.0f)
-    {
-      border_sizes_[q] = images->quads[q].border_size;
-    }
-    else
-    {
-      // default border size (no border)
-      border_sizes_[q] = 0.0f;
-    }
+    // default border size (no border)
+    border_sizes_[q] = 0.0f;
 
     shape_msgs::Mesh mesh = constructMesh(mesh_origin, width, height, border_sizes_[q]);
 
@@ -383,15 +364,12 @@ void MeshDisplayCustom::constructQuads(const rviz_textured_quads::TexturedQuadAr
     mesh_materials_[q]->setCullingMode(Ogre::CULL_NONE);
 
     last_meshes_[q] = mesh;
-
-    Ogre::ColourValue text_color(text_color_property_->getColor().redF(),
-        text_color_property_->getColor().greenF(), text_color_property_->getColor().blueF(), 1.0f);
   }
 }
 
-void MeshDisplayCustom::updateImageMeshes(const rviz_textured_quads::TexturedQuadArray::ConstPtr& images)
+void MeshDisplayCustom::updateImageMeshes(const sensor_msgs::Image::ConstPtr& image)
 {
-  constructQuads(images);
+  constructQuads(image);
   updateMeshProperties();
 }
 
@@ -440,11 +418,11 @@ void MeshDisplayCustom::subscribe()
     return;
   }
 
-  if (!display_images_topic_property_->getTopic().isEmpty())
+  if (!image_topic_property_->getTopic().isEmpty())
   {
     try
     {
-      rviz_display_images_sub_ = nh_.subscribe(display_images_topic_property_->getTopicStd(),
+      image_sub_ = nh_.subscribe(image_topic_property_->getTopicStd(),
           1, &MeshDisplayCustom::updateImageMeshes, this);
       setStatus(StatusProperty::Ok, "Display Images Topic", "OK");
     }
@@ -457,7 +435,7 @@ void MeshDisplayCustom::subscribe()
 
 void MeshDisplayCustom::unsubscribe()
 {
-  rviz_display_images_sub_.shutdown();
+  image_sub_.shutdown();
 }
 
 void MeshDisplayCustom::load(int index)
@@ -501,7 +479,6 @@ void MeshDisplayCustom::load(int index)
     pass->setShininess(shininess);
 
     pass->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-
     mesh_materials_[index]->setCullingMode(Ogre::CULL_NONE);
   }
 
@@ -522,7 +499,7 @@ void MeshDisplayCustom::update(float wall_dt, float ros_dt)
 {
   time_since_last_transform_ += wall_dt;
 
-  if (!display_images_topic_property_->getTopic().isEmpty())
+  if (!image_topic_property_->getTopic().isEmpty())
   {
     try
     {

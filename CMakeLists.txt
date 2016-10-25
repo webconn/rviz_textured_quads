@@ -31,18 +31,16 @@ add_definitions(-DQT_NO_KEYWORDS)
 
 # include_directories(SYSTEM "msg_gen/cpp/include")
 
-add_message_files(
-  FILES
-  TexturedQuad.msg
-  TexturedQuadArray.msg
-)
+# add_message_files(
+#   FILES
+# )
 
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-  geometry_msgs
-  sensor_msgs
-)
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs
+#   geometry_msgs
+#   sensor_msgs
+# )
 
 
 catkin_package(

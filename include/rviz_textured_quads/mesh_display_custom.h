@@ -69,12 +69,10 @@
 #include <OGRE/OgreRenderTargetListener.h>
 #include <OGRE/OgreRenderQueueListener.h>
 
-#include <rviz_textured_quads/TexturedQuad.h>
-#include <rviz_textured_quads/TexturedQuadArray.h>
-
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
+#include <sensor_msgs/Image.h>
 #include <tf/tf.h>
 #include <tf_conversions/tf_eigen.h>
 #include <eigen_conversions/eigen_msg.h>
@@ -93,14 +91,9 @@ class ManualObject;
 
 namespace rviz
 {
-class Axes;
 class RenderPanel;
-class FloatProperty;
 class RosTopicProperty;
-class ColorProperty;
-class VectorProperty;
-class StringProperty;
-class QuaternionProperty;
+class TfFrameProperty;
 
 /**
  * \class MeshDisplayCustom
@@ -141,18 +134,18 @@ private:
 
   void createProjector(int index);
   void addDecalToMaterial(int index, const Ogre::String& matName);
-  void updateImageMeshes(const rviz_textured_quads::TexturedQuadArray::ConstPtr& images);
 
-  void constructQuads(const rviz_textured_quads::TexturedQuadArray::ConstPtr& images);
+  void updateImageMeshes(const sensor_msgs::Image::ConstPtr& images);
+  void constructQuads(const sensor_msgs::Image::ConstPtr& images);
+
   shape_msgs::Mesh constructMesh(geometry_msgs::Pose mesh_origin, float width, float height, float border_size);
   void clearStates(int num_quads);
 
   float time_since_last_transform_;
 
-  RosTopicProperty* display_images_topic_property_;
-  ColorProperty* text_color_property_;
-  FloatProperty* text_height_property_;
-  FloatProperty* text_bottom_offset_;
+  RosTopicProperty* image_topic_property_;
+  TfFrameProperty* tf_frame_property_;
+  ros::Subscriber image_sub_;
 
   std::vector<shape_msgs::Mesh> last_meshes_;
   std::vector<geometry_msgs::Pose> mesh_poses_;
@@ -169,9 +162,6 @@ private:
   std::vector<Ogre::ManualObject*> manual_objects_;
   std::vector<Ogre::MaterialPtr> mesh_materials_;
   std::vector<ROSImageTexture*> textures_;
-
-  ros::Subscriber pose_sub_;
-  ros::Subscriber rviz_display_images_sub_;
 
   std::vector<Ogre::Frustum*> decal_frustums_;
   // need multiple filters (back, up, down, left, right)
