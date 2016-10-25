@@ -270,11 +270,9 @@ void MeshDisplayCustom::clearStates(int num_quads)
 
 void MeshDisplayCustom::constructQuads(const sensor_msgs::Image::ConstPtr& image)
 {
-  int num_quads = 1;
+  clearStates(1);
 
-  clearStates(num_quads);
-
-  for (int q = 0; q < num_quads; q++)
+  int q = 0;
   {
     processImage(q, *image);
 

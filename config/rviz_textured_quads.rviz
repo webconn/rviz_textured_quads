@@ -4,8 +4,7 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /Global Options1
-        - /Status1
+        - /MeshDisplayCustom1
       Splitter Ratio: 0.5
     Tree Height: 292
   - Class: rviz/Selection
@@ -48,10 +47,8 @@ Visualization Manager:
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
       Value: true
-    - Background Color: 0; 0; 0
-      Camera Info Topic: /camera1/camera_info
+    - Camera Info Topic: /camera1/camera_info
       Class: rviz_camera_stream/CameraPub
-      Display namespace: ""
       Enabled: true
       Frame Rate: -1
       Image Topic: /image
@@ -61,6 +58,7 @@ Visualization Manager:
       Visibility:
         Grid: true
         Image: true
+        MeshDisplayCustom: true
         TF: true
         Value: true
     - Class: rviz/Image
@@ -99,6 +97,12 @@ Visualization Manager:
             {}
       Update Interval: 0
       Value: true
+    - Class: rviz_textured_quads/MeshDisplayCustom
+      Enabled: true
+      Image Topic: /image
+      Name: MeshDisplayCustom
+      Quad Frame: quad
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -123,7 +127,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 6.52370024
+      Distance: 6.79769564
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
@@ -158,5 +162,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1200
-  X: 59
-  Y: 32
+  X: 57
+  Y: 24
