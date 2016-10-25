@@ -238,7 +238,6 @@ void MeshDisplayCustom::clearStates()
   last_images_.resize(num_quads);
   decal_frustums_.resize(num_quads);
   filter_frustums_.resize(num_quads);
-  mesh_materials_.resize(num_quads);
 
   border_colors_.resize(4);
   for (size_t i = 0; i < 4; ++i)
@@ -327,7 +326,7 @@ void MeshDisplayCustom::constructQuads(const sensor_msgs::Image::ConstPtr& image
     {
       manual_objects_->clear();
       manual_objects_->estimateVertexCount(mesh.vertices.size() * 2);
-      manual_objects_->begin(mesh_materials_[q]->getName(), Ogre::RenderOperation::OT_TRIANGLE_LIST);
+      manual_objects_->begin(mesh_materials_->getName(), Ogre::RenderOperation::OT_TRIANGLE_LIST);
     }
 
     const std::vector<geometry_msgs::Point>& points = mesh.vertices;
@@ -357,7 +356,7 @@ void MeshDisplayCustom::constructQuads(const sensor_msgs::Image::ConstPtr& image
 
     manual_objects_->end();
 
-    mesh_materials_[q]->setCullingMode(Ogre::CULL_NONE);
+    mesh_materials_->setCullingMode(Ogre::CULL_NONE);
 
     last_meshes_[q] = mesh;
   }
@@ -371,10 +370,9 @@ void MeshDisplayCustom::updateImageMeshes(const sensor_msgs::Image::ConstPtr& im
 
 void MeshDisplayCustom::updateMeshProperties()
 {
-  for (int i = 0; i < mesh_materials_.size(); i++)
   {
     // update color/alpha
-    Ogre::Technique* technique = mesh_materials_[i]->getTechnique(0);
+    Ogre::Technique* technique = mesh_materials_->getTechnique(0);
     Ogre::Pass* pass = technique->getPass(0);
 
     Ogre::ColourValue self_illumination_color(0.0f, 0.0f, 0.0f, 0.0f);
@@ -435,13 +433,12 @@ void MeshDisplayCustom::unsubscribe()
 
 void MeshDisplayCustom::load()
 {
-  const size_t index = 0;
   if (mesh_nodes_ != NULL)
     return;
 
   static int count = 0;
   std::stringstream ss;
-  ss << "MeshNode" << count++ << "GroupIndex" << index;
+  ss << "MeshNode" << count++;
   Ogre::MaterialManager& material_manager = Ogre::MaterialManager::getSingleton();
   Ogre::String resource_group_name =  ss.str();
 
@@ -453,8 +450,8 @@ void MeshDisplayCustom::load()
   {
     rg_mgr.createResourceGroup(resource_group_name);
 
-    mesh_materials_[index] = material_manager.create(material_name, resource_group_name);
-    Ogre::Technique* technique = mesh_materials_[index]->getTechnique(0);
+    mesh_materials_ = material_manager.create(material_name, resource_group_name);
+    Ogre::Technique* technique = mesh_materials_->getTechnique(0);
     Ogre::Pass* pass = technique->getPass(0);
 
     Ogre::ColourValue self_illumnation_color(0.0f, 0.0f, 0.0f, border_colors_[3]);
@@ -475,7 +472,7 @@ void MeshDisplayCustom::load()
     pass->setShininess(shininess);
 
     pass->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-    mesh_materials_[index]->setCullingMode(Ogre::CULL_NONE);
+    mesh_materials_->setCullingMode(Ogre::CULL_NONE);
   }
 
   mesh_nodes_ = this->scene_node_->createChildSceneNode();
@@ -656,11 +653,11 @@ bool MeshDisplayCustom::updateCamera(bool update_image)
   setStatus(StatusProperty::Ok, "Time", "ok");
   setStatus(StatusProperty::Ok, "Camera Info", "ok");
 
-  if (mesh_nodes_ != NULL && filter_frustums_[index].size() == 0 && !mesh_materials_[index].isNull())
+  if (mesh_nodes_ != NULL && filter_frustums_[index].size() == 0 && !mesh_materials_.isNull())
   {
     createProjector(index);
 
-    addDecalToMaterial(index, mesh_materials_[index]->getName());
+    addDecalToMaterial(index, mesh_materials_->getName());
   }
 
   return true;

@@ -160,7 +160,7 @@ private:
 
   Ogre::SceneNode* mesh_nodes_;
   Ogre::ManualObject* manual_objects_;
-  std::vector<Ogre::MaterialPtr> mesh_materials_;
+  Ogre::MaterialPtr mesh_materials_;
   ROSImageTexture* textures_;
 
   std::vector<Ogre::Frustum*> decal_frustums_;
