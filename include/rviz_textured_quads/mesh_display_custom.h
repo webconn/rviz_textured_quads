@@ -116,7 +116,7 @@ private Q_SLOTS:
   void updateDisplayImages();
 
 protected:
-  virtual void load(int index);
+  virtual void load();
 
   // overrides from Display
   virtual void onEnable();
@@ -158,7 +158,7 @@ private:
 
   std::vector<sensor_msgs::Image::ConstPtr> last_images_;
 
-  std::vector<Ogre::SceneNode*> mesh_nodes_;
+  Ogre::SceneNode* mesh_nodes_;
   std::vector<Ogre::ManualObject*> manual_objects_;
   std::vector<Ogre::MaterialPtr> mesh_materials_;
   std::vector<ROSImageTexture*> textures_;

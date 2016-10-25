@@ -75,6 +75,7 @@ bool validateFloats(const sensor_msgs::CameraInfo& msg)
 MeshDisplayCustom::MeshDisplayCustom()
   : Display()
   , time_since_last_transform_(0.0f)
+  , mesh_nodes_(NULL)
 {
   image_topic_property_ = new RosTopicProperty("Image Topic", "",
       QString::fromStdString(ros::message_traits::datatype<sensor_msgs::Image>()),
@@ -113,12 +114,7 @@ MeshDisplayCustom::~MeshDisplayCustom()
   }
   textures_.clear();
 
-  // clear textures
-  for (std::vector<Ogre::SceneNode*>::iterator it = mesh_nodes_.begin() ; it != mesh_nodes_.end(); ++it)
-  {
-    delete(*it);
-  }
-  mesh_nodes_.clear();
+  delete mesh_nodes_;
 
   // TODO: clean up other things
 }
@@ -254,7 +250,6 @@ void MeshDisplayCustom::clearStates()
   projector_nodes_.resize(num_quads);
   filter_frustums_.resize(num_quads);
   mesh_materials_.resize(num_quads);
-  mesh_nodes_.resize(num_quads);
 
   border_colors_.resize(4);
   for (size_t i = 0; i < 4; ++i)
@@ -323,7 +318,7 @@ void MeshDisplayCustom::constructQuads(const sensor_msgs::Image::ConstPtr& image
     boost::mutex::scoped_lock lock(mesh_mutex_);
 
     // create our scenenode and material
-    load(q);
+    load();
 
     if (!manual_objects_[q])
     {
@@ -331,7 +326,7 @@ void MeshDisplayCustom::constructQuads(const sensor_msgs::Image::ConstPtr& image
       std::stringstream ss;
       ss << "MeshObject" << count++ << "Index" << q;
       manual_objects_[q] = context_->getSceneManager()->createManualObject(ss.str());
-      mesh_nodes_[q]->attachObject(manual_objects_[q]);
+      mesh_nodes_->attachObject(manual_objects_[q]);
     }
 
     // If we have the same number of tris as previously, just update the object
@@ -449,9 +444,10 @@ void MeshDisplayCustom::unsubscribe()
   image_sub_.shutdown();
 }
 
-void MeshDisplayCustom::load(int index)
+void MeshDisplayCustom::load()
 {
-  if (mesh_nodes_[index] != NULL)
+  const size_t index = 0;
+  if (mesh_nodes_ != NULL)
     return;
 
   static int count = 0;
@@ -493,7 +489,7 @@ void MeshDisplayCustom::load(int index)
     mesh_materials_[index]->setCullingMode(Ogre::CULL_NONE);
   }
 
-  mesh_nodes_[index] = this->scene_node_->createChildSceneNode();
+  mesh_nodes_ = this->scene_node_->createChildSceneNode();
 }
 
 void MeshDisplayCustom::onEnable()
@@ -673,7 +669,7 @@ bool MeshDisplayCustom::updateCamera(int index, bool update_image)
   setStatus(StatusProperty::Ok, "Time", "ok");
   setStatus(StatusProperty::Ok, "Camera Info", "ok");
 
-  if (mesh_nodes_[index] != NULL && filter_frustums_[index].size() == 0 && !mesh_materials_[index].isNull())
+  if (mesh_nodes_ != NULL && filter_frustums_[index].size() == 0 && !mesh_materials_[index].isNull())
   {
     createProjector(index);
 
