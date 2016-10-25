@@ -163,7 +163,7 @@ private:
   Ogre::MaterialPtr mesh_materials_;
   ROSImageTexture* textures_;
 
-  std::vector<Ogre::Frustum*> decal_frustums_;
+  Ogre::Frustum* decal_frustums_;
   // need multiple filters (back, up, down, left, right)
   std::vector<std::vector<Ogre::Frustum*> > filter_frustums_;
   Ogre::SceneNode* projector_nodes_;

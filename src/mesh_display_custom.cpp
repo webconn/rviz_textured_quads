@@ -79,6 +79,7 @@ MeshDisplayCustom::MeshDisplayCustom()
   , textures_(NULL)
   , projector_nodes_(NULL)
   , manual_objects_(NULL)
+  , decal_frustums_(NULL)
 {
   image_topic_property_ = new RosTopicProperty("Image Topic", "",
       QString::fromStdString(ros::message_traits::datatype<sensor_msgs::Image>()),
@@ -99,12 +100,7 @@ MeshDisplayCustom::~MeshDisplayCustom()
   // clear manual objects
   delete manual_objects_;
 
-  // clear decal frustrums
-  for (std::vector<Ogre::Frustum*>::iterator it = decal_frustums_.begin() ; it != decal_frustums_.end(); ++it)
-  {
-    delete(*it);
-  }
-  decal_frustums_.clear();
+  delete decal_frustums_;
 
   // clear textures
   delete textures_;
@@ -121,10 +117,10 @@ void MeshDisplayCustom::onInitialize()
 
 void MeshDisplayCustom::createProjector(int index)
 {
-  decal_frustums_[index] = new Ogre::Frustum();
+  decal_frustums_ = new Ogre::Frustum();
 
   projector_nodes_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
-  projector_nodes_->attachObject(decal_frustums_[index]);
+  projector_nodes_->attachObject(decal_frustums_);
 
   Ogre::SceneNode* filter_node;
 
@@ -161,7 +157,7 @@ void MeshDisplayCustom::addDecalToMaterial(int index, const Ogre::String& matNam
 
   Ogre::TextureUnitState* tex_state = pass->createTextureUnitState();  // "Decal.png");
   tex_state->setTextureName(textures_->getTexture()->getName());
-  tex_state->setProjectiveTexturing(true, decal_frustums_[index]);
+  tex_state->setProjectiveTexturing(true, decal_frustums_);
 
   tex_state->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
   tex_state->setTextureFiltering(Ogre::FO_POINT, Ogre::FO_LINEAR, Ogre::FO_NONE);
@@ -236,7 +232,6 @@ void MeshDisplayCustom::clearStates()
   last_meshes_.resize(num_quads);
 
   last_images_.resize(num_quads);
-  decal_frustums_.resize(num_quads);
   filter_frustums_.resize(num_quads);
 
   border_colors_.resize(4);
@@ -643,8 +638,8 @@ bool MeshDisplayCustom::updateCamera(bool update_image)
 
   proj_matrix[3][2] = -1;
 
-  if (decal_frustums_[index] != NULL)
-    decal_frustums_[index]->setCustomProjectionMatrix(true, proj_matrix);
+  if (decal_frustums_ != NULL)
+    decal_frustums_->setCustomProjectionMatrix(true, proj_matrix);
 
   // ROS_INFO(" Camera (%f, %f)", proj_matrix[0][0], proj_matrix[1][1]);
   // ROS_INFO(" Render Panel: %x   Viewport: %x", render_panel_, render_panel_->getViewport());
