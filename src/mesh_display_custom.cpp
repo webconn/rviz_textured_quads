@@ -75,7 +75,6 @@ bool validateFloats(const sensor_msgs::CameraInfo& msg)
 MeshDisplayCustom::MeshDisplayCustom()
   : Display()
   , time_since_last_transform_(0.0f)
-  , initialized_(false)
 {
   image_topic_property_ = new RosTopicProperty("Image Topic", "",
       QString::fromStdString(ros::message_traits::datatype<sensor_msgs::Image>()),
@@ -257,12 +256,11 @@ void MeshDisplayCustom::clearStates()
   mesh_materials_.resize(num_quads);
   mesh_nodes_.resize(num_quads);
 
-  border_colors_.resize(num_quads);
+  border_colors_.resize(4);
   for (size_t i = 0; i < 4; ++i)
   {
-    border_colors_[0].push_back(1.0);
+    border_colors_[i] = 1.0;
   }
-  border_sizes_.resize(num_quads);
 }
 
 void MeshDisplayCustom::constructQuads(const sensor_msgs::Image::ConstPtr& image)
@@ -315,9 +313,9 @@ void MeshDisplayCustom::constructQuads(const sensor_msgs::Image::ConstPtr& image
     img_heights_ = image->height;
 
     // default border size (no border)
-    border_sizes_[q] = 0.0f;
+    border_sizes_ = 0.0f;
 
-    shape_msgs::Mesh mesh = constructMesh(mesh_origin, width, height, border_sizes_[q]);
+    shape_msgs::Mesh mesh = constructMesh(mesh_origin, width, height, border_sizes_);
 
     physical_widths_ = width;
     physical_heights_ = height;
@@ -395,15 +393,14 @@ void MeshDisplayCustom::updateMeshProperties()
     Ogre::Technique* technique = mesh_materials_[i]->getTechnique(0);
     Ogre::Pass* pass = technique->getPass(0);
 
-    Ogre::ColourValue self_illumination_color(0.0f, 0.0f, 0.0f, 0.0f);  // border_colors_[i][3]);
+    Ogre::ColourValue self_illumination_color(0.0f, 0.0f, 0.0f, 0.0f);
     pass->setSelfIllumination(self_illumination_color);
 
     Ogre::ColourValue diffuse_color(0.0f, 0.0f, 0.0f, 1.0f);
-        /*border_colors_[i][0], border_colors_[i][1], border_colors_[i][2], border_colors_[i][3]*/
     pass->setDiffuse(diffuse_color);
 
-    Ogre::ColourValue ambient_color(border_colors_[i][0],
-        border_colors_[i][1], border_colors_[i][2], border_colors_[i][3]);
+    Ogre::ColourValue ambient_color(border_colors_[0],
+        border_colors_[1], border_colors_[2], border_colors_[3]);
     pass->setAmbient(ambient_color);
 
     Ogre::ColourValue specular_color(0.0f, 0.0f, 0.0f, 1.0f);
@@ -475,15 +472,15 @@ void MeshDisplayCustom::load(int index)
     Ogre::Technique* technique = mesh_materials_[index]->getTechnique(0);
     Ogre::Pass* pass = technique->getPass(0);
 
-    Ogre::ColourValue self_illumnation_color(0.0f, 0.0f, 0.0f, border_colors_[index][3]);
+    Ogre::ColourValue self_illumnation_color(0.0f, 0.0f, 0.0f, border_colors_[3]);
     pass->setSelfIllumination(self_illumnation_color);
 
-    Ogre::ColourValue diffuse_color(border_colors_[index][0],
-        border_colors_[index][1], border_colors_[index][2], border_colors_[index][3]);
+    Ogre::ColourValue diffuse_color(border_colors_[0],
+        border_colors_[1], border_colors_[2], border_colors_[3]);
     pass->setDiffuse(diffuse_color);
 
-    Ogre::ColourValue ambient_color(border_colors_[index][0],
-        border_colors_[index][1], border_colors_[index][2], border_colors_[index][3]);
+    Ogre::ColourValue ambient_color(border_colors_[0],
+        border_colors_[1], border_colors_[2], border_colors_[3]);
     pass->setAmbient(ambient_color);
 
     Ogre::ColourValue specular_color(1.0f, 1.0f, 1.0f, 1.0f);

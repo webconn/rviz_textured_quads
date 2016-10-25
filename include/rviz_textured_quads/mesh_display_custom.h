@@ -151,8 +151,8 @@ private:
   std::vector<geometry_msgs::Pose> mesh_poses_;
   int img_widths_, img_heights_;
   float physical_widths_, physical_heights_;
-  std::vector<std::vector<float> > border_colors_;
-  std::vector<float> border_sizes_;
+  std::vector<float> border_colors_;
+  float border_sizes_;
 
   ros::NodeHandle nh_;
 
@@ -168,10 +168,7 @@ private:
   std::vector<std::vector<Ogre::Frustum*> > filter_frustums_;
   std::vector<Ogre::SceneNode*> projector_nodes_;
 
-  std::vector<RenderPanel*> render_panel_list_;
   RenderPanel* render_panel_;  // this is the active render panel
-
-  bool initialized_;
 
   boost::mutex mesh_mutex_;
 };
