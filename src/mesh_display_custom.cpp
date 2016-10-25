@@ -77,6 +77,7 @@ MeshDisplayCustom::MeshDisplayCustom()
   , time_since_last_transform_(0.0f)
   , mesh_nodes_(NULL)
   , textures_(NULL)
+  , projector_nodes_(NULL)
 {
   image_topic_property_ = new RosTopicProperty("Image Topic", "",
       QString::fromStdString(ros::message_traits::datatype<sensor_msgs::Image>()),
@@ -125,15 +126,15 @@ void MeshDisplayCustom::createProjector(int index)
 {
   decal_frustums_[index] = new Ogre::Frustum();
 
-  projector_nodes_[index] = scene_manager_->getRootSceneNode()->createChildSceneNode();
-  projector_nodes_[index]->attachObject(decal_frustums_[index]);
+  projector_nodes_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
+  projector_nodes_->attachObject(decal_frustums_[index]);
 
   Ogre::SceneNode* filter_node;
 
   // back filter
   filter_frustums_[index].push_back(new Ogre::Frustum());
   filter_frustums_[index].back()->setProjectionType(Ogre::PT_ORTHOGRAPHIC);
-  filter_node = projector_nodes_[index]->createChildSceneNode();
+  filter_node = projector_nodes_->createChildSceneNode();
   filter_node->attachObject(filter_frustums_[index].back());
   filter_node->setOrientation(Ogre::Quaternion(Ogre::Degree(90), Ogre::Vector3::UNIT_Y));
 }
@@ -242,7 +243,6 @@ void MeshDisplayCustom::clearStates()
 
   last_images_.resize(num_quads);
   decal_frustums_.resize(num_quads);
-  projector_nodes_.resize(num_quads);
   filter_frustums_.resize(num_quads);
   mesh_materials_.resize(num_quads);
 
@@ -625,10 +625,10 @@ bool MeshDisplayCustom::updateCamera(bool update_image)
     return false;
   }
 
-  if (projector_nodes_[index] != NULL)
+  if (projector_nodes_ != NULL)
   {
-    projector_nodes_[index]->setPosition(position);
-    projector_nodes_[index]->setOrientation(orientation);
+    projector_nodes_->setPosition(position);
+    projector_nodes_->setOrientation(orientation);
   }
 
   // calculate the projection matrix

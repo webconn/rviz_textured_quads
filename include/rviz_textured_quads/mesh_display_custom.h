@@ -166,7 +166,7 @@ private:
   std::vector<Ogre::Frustum*> decal_frustums_;
   // need multiple filters (back, up, down, left, right)
   std::vector<std::vector<Ogre::Frustum*> > filter_frustums_;
-  std::vector<Ogre::SceneNode*> projector_nodes_;
+  Ogre::SceneNode* projector_nodes_;
 
   RenderPanel* render_panel_;  // this is the active render panel
 
