@@ -139,7 +139,7 @@ private:
   void constructQuads(const sensor_msgs::Image::ConstPtr& images);
 
   shape_msgs::Mesh constructMesh(geometry_msgs::Pose mesh_origin, float width, float height, float border_size);
-  void clearStates(int num_quads);
+  void clearStates();
 
   float time_since_last_transform_;
 

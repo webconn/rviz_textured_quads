@@ -235,13 +235,14 @@ shape_msgs::Mesh MeshDisplayCustom::constructMesh(geometry_msgs::Pose mesh_origi
   return mesh;
 }
 
-void MeshDisplayCustom::clearStates(int num_quads)
+void MeshDisplayCustom::clearStates()
 {
   for (int q = 0; q < manual_objects_.size(); q++)
   {
     manual_objects_[q]->clear();
   }
 
+  const int num_quads = 1;
   // resize state vectors
   mesh_poses_.resize(num_quads);
   img_widths_.resize(num_quads);
@@ -270,7 +271,7 @@ void MeshDisplayCustom::clearStates(int num_quads)
 
 void MeshDisplayCustom::constructQuads(const sensor_msgs::Image::ConstPtr& image)
 {
-  clearStates(1);
+  clearStates();
 
   int q = 0;
   {
