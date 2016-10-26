@@ -107,6 +107,8 @@ MeshDisplayCustom::~MeshDisplayCustom()
   delete mesh_nodes_;
 
   // TODO: clean up other things
+  for (size_t i = 0; i < filter_frustums_.size(); ++i)
+    delete filter_frustums_[i];
 }
 
 void MeshDisplayCustom::onInitialize()
@@ -125,10 +127,12 @@ void MeshDisplayCustom::createProjector(int index)
   Ogre::SceneNode* filter_node;
 
   // back filter
-  filter_frustums_[index].push_back(new Ogre::Frustum());
-  filter_frustums_[index].back()->setProjectionType(Ogre::PT_ORTHOGRAPHIC);
+  for (size_t i = 0; i < filter_frustums_.size(); ++i)
+    delete filter_frustums_[i];
+  filter_frustums_.push_back(new Ogre::Frustum());
+  filter_frustums_.back()->setProjectionType(Ogre::PT_ORTHOGRAPHIC);
   filter_node = projector_nodes_->createChildSceneNode();
-  filter_node->attachObject(filter_frustums_[index].back());
+  filter_node->attachObject(filter_frustums_.back());
   filter_node->setOrientation(Ogre::Quaternion(Ogre::Degree(90), Ogre::Vector3::UNIT_Y));
 }
 
@@ -163,10 +167,10 @@ void MeshDisplayCustom::addDecalToMaterial(int index, const Ogre::String& matNam
   tex_state->setTextureFiltering(Ogre::FO_POINT, Ogre::FO_LINEAR, Ogre::FO_NONE);
   tex_state->setColourOperation(Ogre::LBO_REPLACE);  // don't accept additional effects
 
-  for (int i = 0; i < filter_frustums_[index].size(); i++)
+  for (int i = 0; i < filter_frustums_.size(); i++)
   {
     tex_state = pass->createTextureUnitState("Decal_filter.png");
-    tex_state->setProjectiveTexturing(true, filter_frustums_[index][i]);
+    tex_state->setProjectiveTexturing(true, filter_frustums_[i]);
     tex_state->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
     tex_state->setTextureFiltering(Ogre::TFO_NONE);
   }
@@ -232,7 +236,6 @@ void MeshDisplayCustom::clearStates()
   last_meshes_.resize(num_quads);
 
   last_images_.resize(num_quads);
-  filter_frustums_.resize(num_quads);
 
   border_colors_.resize(4);
   for (size_t i = 0; i < 4; ++i)
@@ -648,7 +651,7 @@ bool MeshDisplayCustom::updateCamera(bool update_image)
   setStatus(StatusProperty::Ok, "Time", "ok");
   setStatus(StatusProperty::Ok, "Camera Info", "ok");
 
-  if (mesh_nodes_ != NULL && filter_frustums_[index].size() == 0 && !mesh_materials_.isNull())
+  if (mesh_nodes_ != NULL && filter_frustums_.size() == 0 && !mesh_materials_.isNull())
   {
     createProjector(index);
 
