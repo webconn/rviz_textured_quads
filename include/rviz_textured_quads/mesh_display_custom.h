@@ -97,6 +97,8 @@ public:
   virtual void update(float wall_dt, float ros_dt);
   virtual void reset();
 
+  virtual void preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);
+
 private Q_SLOTS:
   void updateMeshProperties();
   void updateDisplayImages();
@@ -126,8 +128,6 @@ private:
 
   shape_msgs::Mesh constructMesh(geometry_msgs::Pose mesh_origin, float width, float height, float border_size);
   void clearStates();
-
-  float time_since_last_transform_;
 
   RosTopicProperty* image_topic_property_;
   TfFrameProperty* tf_frame_property_;

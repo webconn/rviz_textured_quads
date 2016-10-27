@@ -76,7 +76,6 @@ bool validateFloats(const sensor_msgs::CameraInfo& msg)
 
 MeshDisplayCustom::MeshDisplayCustom()
   : Display()
-  , time_since_last_transform_(0.0f)
   , mesh_nodes_(NULL)
   , textures_(NULL)
   , projector_nodes_(NULL)
@@ -500,16 +499,22 @@ void MeshDisplayCustom::onDisable()
   unsubscribe();
 }
 
+void MeshDisplayCustom::preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt)
+{
+}
+
 void MeshDisplayCustom::update(float wall_dt, float ros_dt)
 {
-  if (new_image_)
+  if (cur_image_)
   {
+    // need to run these every frame in case tf has changed,
+    // but could detect that.
     constructQuads(cur_image_);
     updateMeshProperties();
+    // TODO(lucasw) do what is necessary for new image, but separate
+    // other stuff.
     new_image_ = false;
   }
-
-  time_since_last_transform_ += wall_dt;
 
   if (textures_ && !image_topic_property_->getTopic().isEmpty())
   {
@@ -522,6 +527,7 @@ void MeshDisplayCustom::update(float wall_dt, float ros_dt)
       setStatus(StatusProperty::Error, "Display Image", e.what());
     }
   }
+
 }
 
 bool MeshDisplayCustom::updateCamera(bool update_image)
