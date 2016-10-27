@@ -47,6 +47,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <rviz/display_context.h>
+#include <rviz/properties/float_property.h>
 #include <rviz/properties/ros_topic_property.h>
 #include <rviz/properties/tf_frame_property.h>
 #include <rviz/render_panel.h>
@@ -89,6 +90,9 @@ MeshDisplayCustom::MeshDisplayCustom()
   tf_frame_property_ = new TfFrameProperty("Quad Frame", "map",
       "Align the image quad to the xy plane of this tf frame",
       this, 0, true);
+
+  meters_per_pixel_property_ = new FloatProperty("Meters per pixel", 0.002,
+      "Rviz meters per image pixel.", this);
 }
 
 MeshDisplayCustom::~MeshDisplayCustom()
@@ -285,8 +289,18 @@ void MeshDisplayCustom::constructQuads(const sensor_msgs::Image::ConstPtr& image
     mesh_origin.orientation.z = xz_quat.z();
     mesh_origin.orientation.w = xz_quat.w();
 
-    float width = 1.0 * image->width/image->height;
+    const float meters_per_pixel = meters_per_pixel_property_->getFloat();
+    float width = 1.0;
     float height = 1.0;
+    if (meters_per_pixel > 0)
+    {
+      width = image->width * meters_per_pixel;
+      height = image->height * meters_per_pixel;
+    }
+    else
+    {
+      height = width * image->height / image->width;
+    }
 
     // set properties
     mesh_poses_[q] = mesh_origin;
