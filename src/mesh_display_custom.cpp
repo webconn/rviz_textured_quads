@@ -1,4 +1,4 @@
-/*
+/* Copyright (c) 2013-2015 Team ViGIR ( TORC Robotics LLC, TU Darmstadt, Virginia Tech, Oregon State University, Cornell University, and Leibniz University Hanover )
  * MeshDisplayCustom class implementation.
  *
  * Author: Felipe Bacim.
@@ -58,6 +58,7 @@
 #include <rviz/visualization_manager.h>
 #include <rviz_textured_quads/mesh_display_custom.h>
 #include <sensor_msgs/image_encodings.h>
+#include <string>
 #include <vector>
 
 namespace rviz
@@ -81,6 +82,7 @@ MeshDisplayCustom::MeshDisplayCustom()
   , projector_nodes_(NULL)
   , manual_objects_(NULL)
   , decal_frustums_(NULL)
+  , new_image_(false)
 {
   image_topic_property_ = new RosTopicProperty("Image Topic", "",
       QString::fromStdString(ros::message_traits::datatype<sensor_msgs::Image>()),
@@ -98,26 +100,24 @@ MeshDisplayCustom::MeshDisplayCustom()
 MeshDisplayCustom::~MeshDisplayCustom()
 {
   unsubscribe();
-
-  // TODO: Why am I doing this? switch to shared ptrs Argh!!!!!!
-
-  // clear manual objects
+  // TODO(lucasw) switch to smart pointers
   delete manual_objects_;
-
   delete decal_frustums_;
-
-  // clear textures
   delete textures_;
   delete mesh_nodes_;
 
-  // TODO: clean up other things
   for (size_t i = 0; i < filter_frustums_.size(); ++i)
     delete filter_frustums_[i];
+
+  // TODO(lucasw) clean up other things
+  delete image_topic_property_;
+  delete tf_frame_property_;
+  delete meters_per_pixel_property_;
 }
 
 void MeshDisplayCustom::onInitialize()
 {
-	tf_frame_property_->setFrameManager(context_->getFrameManager());
+  tf_frame_property_->setFrameManager(context_->getFrameManager());
   Display::onInitialize();
 }
 
@@ -260,15 +260,15 @@ void MeshDisplayCustom::constructQuads(const sensor_msgs::Image::ConstPtr& image
 
     // TODO(lucasw) get pose from tf
     const std::string frame = tf_frame_property_->getFrameStd();
-		// Lookup transform into fixed frame
-		Ogre::Vector3 position;
-		Ogre::Quaternion orientation;
-		if (!context_->getFrameManager()->getTransform(frame, ros::Time::now(), position, orientation))
-		{
-			ROS_DEBUG("Error transforming from fixed frame to frame '%s'",
-					frame.c_str());
-			return;
-		}
+    // Lookup transform into fixed frame
+    Ogre::Vector3 position;
+    Ogre::Quaternion orientation;
+    if (!context_->getFrameManager()->getTransform(frame, ros::Time::now(), position, orientation))
+    {
+      ROS_DEBUG("Error transforming from fixed frame to frame '%s'",
+          frame.c_str());
+      return;
+    }
 
     mesh_origin.position.x = position[0];
     mesh_origin.position.y = position[1];
@@ -374,10 +374,10 @@ void MeshDisplayCustom::constructQuads(const sensor_msgs::Image::ConstPtr& image
   }
 }
 
-void MeshDisplayCustom::updateImageMeshes(const sensor_msgs::Image::ConstPtr& image)
+void MeshDisplayCustom::updateImage(const sensor_msgs::Image::ConstPtr& image)
 {
-  constructQuads(image);
-  updateMeshProperties();
+  cur_image_ = image;
+  new_image_ = true;
 }
 
 void MeshDisplayCustom::updateMeshProperties()
@@ -428,7 +428,7 @@ void MeshDisplayCustom::subscribe()
     try
     {
       image_sub_ = nh_.subscribe(image_topic_property_->getTopicStd(),
-          1, &MeshDisplayCustom::updateImageMeshes, this);
+          1, &MeshDisplayCustom::updateImage, this);
       setStatus(StatusProperty::Ok, "Display Images Topic", "OK");
     }
     catch (ros::Exception& e)
@@ -502,6 +502,13 @@ void MeshDisplayCustom::onDisable()
 
 void MeshDisplayCustom::update(float wall_dt, float ros_dt)
 {
+  if (new_image_)
+  {
+    constructQuads(cur_image_);
+    updateMeshProperties();
+    new_image_ = false;
+  }
+
   time_since_last_transform_ += wall_dt;
 
   if (textures_ && !image_topic_property_->getTopic().isEmpty())
@@ -593,8 +600,8 @@ bool MeshDisplayCustom::updateCamera(bool update_image)
   // if even the texture has 0 size, return
   if (img_height <= 0.0 || img_width <= 0.0)
   {
-    const std::string text = "Could not determine width/height of image due to malformed \
-        CameraInfo (either width or height is 0) and texture.";
+    std::string text = "Could not determine width/height of image due to malformed ";
+    text += "CameraInfo (either width or height is 0) and texture.";
     setStatus(StatusProperty::Error, "Camera Info", QString::fromStdString(text));
     return false;
   }

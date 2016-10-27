@@ -1,12 +1,4 @@
-/*
- * MeshDisplayCustom declaration.
- *
- * Author: Felipe Bacim.
- *
- * help with selection of robot parts
- */
-/*
- * Copyright (c) 2008, Willow Garage, Inc.
+/* Copyright (c) 2013-2015 Team ViGIR ( TORC Robotics LLC, TU Darmstadt, Virginia Tech, Oregon State University, Cornell University, and Leibniz University Hanover )
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,50 +26,43 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RVIZ_MESH_DISPLAY_H
-#define RVIZ_MESH_DISPLAY_H
+#ifndef RVIZ_TEXTURED_QUADS_MESH_DISPLAY_CUSTOM_H
+#define RVIZ_TEXTURED_QUADS_MESH_DISPLAY_CUSTOM_H
 
 #include <QObject>
 // kinetic compatibility http://answers.ros.org/question/233786/parse-error-at-boost_join/
 #ifndef Q_MOC_RUN
 
-#include "rviz/display.h"
-#include "rviz/frame_manager.h"
-#include "rviz/image/image_display_base.h"
-#include "rviz/image/ros_image_texture.h"
-
-#include <image_transport/image_transport.h>
-#include <sensor_msgs/CameraInfo.h>
-#include <message_filters/subscriber.h>
-#include <tf/message_filter.h>
-
-#include <geometry_msgs/Pose.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <shape_msgs/Mesh.h>
-#include <std_msgs/Float64.h>
-
-#include <tf/transform_listener.h>
-
-#include <OGRE/OgreVector3.h>
-#include "OGRE/OgreRoot.h"
-#include "OGRE/OgreRenderSystem.h"
-#include "OGRE/OgreRenderWindow.h"
-#include "OGRE/OgreWindowEventUtilities.h"
-#include "OGRE/OgreManualObject.h"
-#include "OGRE/OgreEntity.h"
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreRenderTargetListener.h>
-#include <OGRE/OgreRenderQueueListener.h>
-
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-
-#include <sensor_msgs/Image.h>
-#include <tf/tf.h>
-#include <tf_conversions/tf_eigen.h>
+#include <OGRE/OgreEntity.h>
+#include <OGRE/OgreManualObject.h>
+#include <OGRE/OgreRenderQueueListener.h>
+#include <OGRE/OgreRenderSystem.h>
+#include <OGRE/OgreRenderTargetListener.h>
+#include <OGRE/OgreRenderWindow.h>
+#include <OGRE/OgreRoot.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreVector3.h>
+#include <OGRE/OgreWindowEventUtilities.h>
 #include <eigen_conversions/eigen_msg.h>
-
+#include <geometry_msgs/Pose.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <image_transport/image_transport.h>
 #include <map>
+#include <message_filters/subscriber.h>
+#include <rviz/display.h>
+#include <rviz/frame_manager.h>
+#include <rviz/image/image_display_base.h>
+#include <rviz/image/ros_image_texture.h>
+#include <sensor_msgs/CameraInfo.h>
+#include <sensor_msgs/Image.h>
+#include <shape_msgs/Mesh.h>
+#include <std_msgs/Float64.h>
+#include <tf/message_filter.h>
+#include <tf/tf.h>
+#include <tf/transform_listener.h>
+#include <tf_conversions/tf_eigen.h>
 #include <vector>
 
 #endif  // Q_MOC_RUN
@@ -136,7 +121,7 @@ private:
   void createProjector(int index);
   void addDecalToMaterial(int index, const Ogre::String& matName);
 
-  void updateImageMeshes(const sensor_msgs::Image::ConstPtr& images);
+  void updateImage(const sensor_msgs::Image::ConstPtr& image);
   void constructQuads(const sensor_msgs::Image::ConstPtr& images);
 
   shape_msgs::Mesh constructMesh(geometry_msgs::Pose mesh_origin, float width, float height, float border_size);
@@ -158,6 +143,8 @@ private:
 
   ros::NodeHandle nh_;
 
+  bool new_image_;
+  sensor_msgs::Image::ConstPtr cur_image_;
   std::vector<sensor_msgs::Image::ConstPtr> last_images_;
 
   Ogre::SceneNode* mesh_nodes_;
@@ -177,6 +164,6 @@ private:
 
 }  // namespace rviz
 
-#endif
+#endif  // RVIZ_TEXTURED_QUADS_MESH_DISPLAY_CUSTOM_H
 
 
