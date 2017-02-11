@@ -102,9 +102,9 @@ install(TARGETS ${TEXTURED_QUAD_LIB}  # ${TEXTURED_QUAD_LIB}_core
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
-install(DIRECTORY textures
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/rviz_textured_quads
-)
+# install(DIRECTORY textures
+#   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/rviz_textured_quads
+# )
 
 install(FILES
   mesh_display_custom_plugin_description.xml
