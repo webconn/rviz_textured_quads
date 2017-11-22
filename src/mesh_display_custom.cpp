@@ -262,7 +262,8 @@ void MeshDisplayCustom::constructQuads(const sensor_msgs::Image::ConstPtr& image
     // Lookup transform into fixed frame
     Ogre::Vector3 position;
     Ogre::Quaternion orientation;
-    if (!context_->getFrameManager()->getTransform(frame, ros::Time::now(), position, orientation))
+    if (!context_->getFrameManager()->getTransform(frame, ros::Time(0),
+        position, orientation))
     {
       std::stringstream ss;
       ss << "Error transforming from fixed frame to frame " << frame.c_str();
@@ -428,7 +429,7 @@ void MeshDisplayCustom::subscribe()
     {
       image_sub_ = nh_.subscribe(image_topic_property_->getTopicStd(),
           1, &MeshDisplayCustom::updateImage, this);
-      setStatus(StatusProperty::Ok, "Display Images Topic", "OK");
+      setStatus(StatusProperty::Ok, "Display Images Topic", "ok");
     }
     catch (ros::Exception& e)
     {
@@ -538,12 +539,15 @@ void MeshDisplayCustom::update(float wall_dt, float ros_dt)
     catch (UnsupportedImageEncoding& e)
     {
       setStatus(StatusProperty::Error, "Display Image", e.what());
+      return;
     }
     catch (std::string& e)
     {
       setStatus(StatusProperty::Error, "Display Image", e.c_str());
+      return;
     }
   }
+  setStatus(StatusProperty::Ok, "Display Image", "ok");
 }
 
 void MeshDisplayCustom::updateCamera(bool update_image)
