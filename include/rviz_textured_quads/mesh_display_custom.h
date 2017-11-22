@@ -118,7 +118,7 @@ protected:
 
 private:
   void clear();
-  bool updateCamera(bool update_image);
+  void updateCamera(bool update_image);
 
   void createProjector(int index);
   void addDecalToMaterial(int index, const Ogre::String& matName);

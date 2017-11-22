@@ -264,9 +264,9 @@ void MeshDisplayCustom::constructQuads(const sensor_msgs::Image::ConstPtr& image
     Ogre::Quaternion orientation;
     if (!context_->getFrameManager()->getTransform(frame, ros::Time::now(), position, orientation))
     {
-      ROS_DEBUG("Error transforming from fixed frame to frame '%s'",
-          frame.c_str());
-      return;
+      std::stringstream ss;
+      ss << "Error transforming from fixed frame to frame " << frame.c_str();
+      throw ss.str();
     }
 
     mesh_origin.position.x = position[0];
@@ -509,7 +509,20 @@ void MeshDisplayCustom::update(float wall_dt, float ros_dt)
   {
     // need to run these every frame in case tf has changed,
     // but could detect that.
-    constructQuads(cur_image_);
+    try
+    {
+      constructQuads(cur_image_);
+    }
+    catch (std::string& e)
+    {
+      setStatus(StatusProperty::Error, "Display Image", e.c_str());
+      return;
+    }
+    catch (cv_bridge::Exception& e)
+    {
+      setStatus(StatusProperty::Error, "Display Image", e.what());
+      return;
+    }
     updateMeshProperties();
     // TODO(lucasw) do what is necessary for new image, but separate
     // other stuff.
@@ -526,11 +539,14 @@ void MeshDisplayCustom::update(float wall_dt, float ros_dt)
     {
       setStatus(StatusProperty::Error, "Display Image", e.what());
     }
+    catch (std::string& e)
+    {
+      setStatus(StatusProperty::Error, "Display Image", e.c_str());
+    }
   }
-
 }
 
-bool MeshDisplayCustom::updateCamera(bool update_image)
+void MeshDisplayCustom::updateCamera(bool update_image)
 {
   int index = 0;
   if (update_image)
@@ -542,7 +558,8 @@ bool MeshDisplayCustom::updateCamera(bool update_image)
       !physical_widths_ || !physical_heights_ ||
       !last_images_[index])
   {
-    return false;
+    throw("sizes or image not ready");
+    // return false;
   }
 
   boost::mutex::scoped_lock lock(mesh_mutex_);
@@ -608,8 +625,7 @@ bool MeshDisplayCustom::updateCamera(bool update_image)
   {
     std::string text = "Could not determine width/height of image due to malformed ";
     text += "CameraInfo (either width or height is 0) and texture.";
-    setStatus(StatusProperty::Error, "Camera Info", QString::fromStdString(text));
-    return false;
+    throw text;
   }
 
   // projection matrix
@@ -635,10 +651,7 @@ bool MeshDisplayCustom::updateCamera(bool update_image)
 
   if (!validateFloats(position))
   {
-    ROS_ERROR("position error");
-    setStatus(StatusProperty::Error, "Camera Info",
-        "CameraInfo/P resulted in an invalid position calculation (nans or infs)");
-    return false;
+    throw "CameraInfo/P resulted in an invalid position calculation (nans or infs)";
   }
 
   if (projector_nodes_ != NULL)
@@ -684,8 +697,6 @@ bool MeshDisplayCustom::updateCamera(bool update_image)
 
     addDecalToMaterial(index, mesh_materials_->getName());
   }
-
-  return true;
 }
 
 void MeshDisplayCustom::clear()
@@ -709,15 +720,7 @@ void MeshDisplayCustom::processImage(int index, const sensor_msgs::Image& msg)
   cv_bridge::CvImagePtr cv_ptr;
 
   // simply converting every image to RGBA
-  try
-  {
-    cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::RGBA8);
-  }
-  catch (cv_bridge::Exception& e)
-  {
-    ROS_ERROR("MeshDisplayCustom: cv_bridge exception: %s", e.what());
-    return;
-  }
+  cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::RGBA8);
 
   // update image alpha
   // for(int i = 0; i < cv_ptr->image.rows; i++)
