@@ -258,7 +258,11 @@ void MeshDisplayCustom::constructQuads(const sensor_msgs::Image::ConstPtr& image
     geometry_msgs::Pose mesh_origin;
 
     // TODO(lucasw) get pose from tf
-    const std::string frame = tf_frame_property_->getFrameStd();
+    std::string frame = tf_frame_property_->getFrameStd();
+    if (frame == "")
+    {
+      frame = image->header.frame_id;
+    }
     // Lookup transform into fixed frame
     Ogre::Vector3 position;
     Ogre::Quaternion orientation;
